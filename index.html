@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тестирование по законам</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Экран выбора теста -->
+        <div id="test-selection-screen" class="screen active">
+            <div class="header">
+                <h1><i class="fas fa-graduation-cap"></i> Тестирование по законам</h1>
+                <p class="subtitle">Проверьте свои знания основных законов</p>
+            </div>
+            
+            <div class="law-selection">
+                <h2><i class="fas fa-book-open"></i> Выберите закон для тестирования</h2>
+                <div class="law-cards">
+                    <div class="law-card" data-law="1">
+                        <div class="law-number">1</div>
+                        <h3>Первый закон</h3>
+                        <p>Основные положения и принципы</p>
+                    </div>
+                    <div class="law-card" data-law="2">
+                        <div class="law-number">2</div>
+                        <h3>Второй закон</h3>
+                        <p>Права и обязанности</p>
+                    </div>
+                    <div class="law-card" data-law="3">
+                        <div class="law-number">3</div>
+                        <h3>Третий закон</h3>
+                        <p>Процессуальные нормы</p>
+                    </div>
+                    <div class="law-card" data-law="4">
+                        <div class="law-number">4</div>
+                        <h3>Четвертый закон</h3>
+                        <p>Административные положения</p>
+                    </div>
+                    <div class="law-card" data-law="5">
+                        <div class="law-number">5</div>
+                        <h3>Пятый закон</h3>
+                        <p>Заключительные положения</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="instructions">
+                <h3><i class="fas fa-info-circle"></i> Инструкция</h3>
+                <ul>
+                    <li>Выберите один из пяти законов для тестирования</li>
+                    <li>Каждый тест содержит 10 вопросов</li>
+                    <li>В каждом вопросе нужно выбрать один правильный ответ</li>
+                    <li>После ответа вы увидите правильный вариант</li>
+                    <li>В конце теста вы получите детальный результат</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Экран тестирования -->
+        <div id="test-screen" class="screen">
+            <div class="test-header">
+                <div class="progress-info">
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                    <div class="progress-text">Вопрос <span id="current-question">1</span> из <span id="total-questions">10</span></div>
+                </div>
+                
+                <div class="law-indicator">
+                    <i class="fas fa-scale-balanced"></i>
+                    <span id="current-law">Закон 1</span>
+                </div>
+                
+                <button id="back-to-selection" class="btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Назад
+                </button>
+            </div>
+            
+            <div class="question-container">
+                <h2 id="question-text">Текст вопроса</h2>
+                
+                <div id="options-container" class="options-container">
+                    <!-- Варианты ответов будут добавлены динамически -->
+                </div>
+            </div>
+            
+            <div class="navigation">
+                <button id="next-question-btn" class="btn-primary" disabled>
+                    Следующий вопрос <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Экран результатов -->
+        <div id="results-screen" class="screen">
+            <div class="results-header">
+                <h1><i class="fas fa-chart-line"></i> Результаты тестирования</h1>
+                <div class="law-indicator results-law">
+                    <i class="fas fa-scale-balanced"></i>
+                    <span id="results-law-name">Закон 1</span>
+                </div>
+            </div>
+            
+            <div class="score-container">
+                <div class="score-circle">
+                    <div class="score-value" id="score-percentage">0%</div>
+                    <div class="score-label">правильных ответов</div>
+                </div>
+                
+                <div class="score-details">
+                    <div class="score-detail correct">
+                        <span class="score-count" id="correct-count">0</span>
+                        <span class="score-text">Правильных ответов</span>
+                    </div>
+                    <div class="score-detail incorrect">
+                        <span class="score-count" id="incorrect-count">0</span>
+                        <span class="score-text">Неправильных ответов</span>
+                    </div>
+                    <div class="score-detail total">
+                        <span class="score-count" id="total-count">0</span>
+                        <span class="score-text">Всего вопросов</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="results-details">
+                <h3><i class="fas fa-list-check"></i> Детализация ответов</h3>
+                <div id="results-list" class="results-list">
+                    <!-- Список результатов будет добавлен динамически -->
+                </div>
+            </div>
+            
+            <div class="results-actions">
+                <button id="restart-test-btn" class="btn-primary">
+                    <i class="fas fa-redo"></i> Пройти тест заново
+                </button>
+                <button id="new-test-btn" class="btn-secondary">
+                    <i class="fas fa-book"></i> Выбрать другой закон
+                </button>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>© 2023 Тестирование по законам. Все права защищены.</p>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
