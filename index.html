@@ -3,148 +3,148 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Тестирование по законам</title>
+    <title>Заңдар бойынша тестілеу</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <div class="container">
-        <!-- Экран выбора теста -->
+        <!-- Тест таңдау экраны -->
         <div id="test-selection-screen" class="screen active">
             <div class="header">
-                <h1><i class="fas fa-graduation-cap"></i> Тестирование по законам</h1>
-                <p class="subtitle">Проверьте свои знания основных законов</p>
+                <h1><i class="fas fa-graduation-cap"></i> Заңдар бойынша тестілеу</h1>
+                <p class="subtitle"> Негізгі заңдар туралы біліміңізді тексеріңіз</p>
             </div>
             
             <div class="law-selection">
-                <h2><i class="fas fa-book-open"></i> Выберите закон для тестирования</h2>
+                <h2><i class="fas fa-book-open"></i> Тестілеу үшін заңды таңдаңыз</h2>
                 <div class="law-cards">
                     <div class="law-card" data-law="1">
                         <div class="law-number">1</div>
-                        <h3>Первый закон</h3>
-                        <p>Основные положения и принципы</p>
+                        <h3>Бірінші заң</h3>
+                        <p>Негізгі ережелер мен принциптер</p>
                     </div>
                     <div class="law-card" data-law="2">
                         <div class="law-number">2</div>
-                        <h3>Второй закон</h3>
-                        <p>Права и обязанности</p>
+                        <h3>Екінші заң</h3>
+                        <p>Құқықтар мен міндеттер</p>
                     </div>
                     <div class="law-card" data-law="3">
                         <div class="law-number">3</div>
-                        <h3>Третий закон</h3>
-                        <p>Процессуальные нормы</p>
+                        <h3>Үшінші заң</h3>
+                        <p>Процессуалдық нормалар</p>
                     </div>
                     <div class="law-card" data-law="4">
                         <div class="law-number">4</div>
-                        <h3>Четвертый закон</h3>
-                        <p>Административные положения</p>
+                        <h3>Төртінші заң</h3>
+                        <p>Әкімшілік ережелер</p>
                     </div>
                     <div class="law-card" data-law="5">
                         <div class="law-number">5</div>
-                        <h3>Пятый закон</h3>
-                        <p>Заключительные положения</p>
+                        <h3>Бесінші заң</h3>
+                        <p>Қорытынды ережелер</p>
                     </div>
                 </div>
             </div>
             
             <div class="instructions">
-                <h3><i class="fas fa-info-circle"></i> Инструкция</h3>
+                <h3><i class="fas fa-info-circle"></i> Нұсқаулық</h3>
                 <ul>
-                    <li>Выберите один из пяти законов для тестирования</li>
-                    <li>Каждый тест содержит 10 вопросов</li>
-                    <li>В каждом вопросе нужно выбрать один правильный ответ</li>
-                    <li>После ответа вы увидите правильный вариант</li>
-                    <li>В конце теста вы получите детальный результат</li>
+                    <li>Тестілеу үшін бес Заңның бірін таңдаңыз</li>
+                    <li>Әр тестте 50 сұрақ бар</li>
+                    <li>Әр сұрақта бір дұрыс жауапты таңдау керек</li>
+                    <li>Жауап бергеннен кейін Сіз дұрыс нұсқаны көресіз</li>
+                    <li>Тест соңында сіз егжей тегжейлі нәтиже аласыз</li>
                 </ul>
             </div>
         </div>
         
-        <!-- Экран тестирования -->
+        <!-- Тестілеу экраны -->
         <div id="test-screen" class="screen">
             <div class="test-header">
                 <div class="progress-info">
                     <div class="progress-bar">
                         <div class="progress-fill"></div>
                     </div>
-                    <div class="progress-text">Вопрос <span id="current-question">1</span> из <span id="total-questions">10</span></div>
+                    <div class="progress-text">Сұрақ <span id="current-question">1</span> из <span id="total-questions">10</span></div>
                 </div>
                 
                 <div class="law-indicator">
                     <i class="fas fa-scale-balanced"></i>
-                    <span id="current-law">Закон 1</span>
+                    <span id="current-law">Заң 1</span>
                 </div>
                 
                 <button id="back-to-selection" class="btn-secondary">
-                    <i class="fas fa-arrow-left"></i> Назад
+                    <i class="fas fa-arrow-left"></i> Қайту
                 </button>
             </div>
             
             <div class="question-container">
-                <h2 id="question-text">Текст вопроса</h2>
+                <h2 id="question-text">Сұрақ мәтіні</h2>
                 
                 <div id="options-container" class="options-container">
-                    <!-- Варианты ответов будут добавлены динамически -->
+                    <!-- Жауап опциялары динамикалық түрде қосылады -->
                 </div>
             </div>
             
             <div class="navigation">
                 <button id="next-question-btn" class="btn-primary" disabled>
-                    Следующий вопрос <i class="fas fa-arrow-right"></i>
+                    Келесі сұрақ <i class="fas fa-arrow-right"></i>
                 </button>
             </div>
         </div>
         
-        <!-- Экран результатов -->
+        <!-- Нәтижелер экраны -->
         <div id="results-screen" class="screen">
             <div class="results-header">
-                <h1><i class="fas fa-chart-line"></i> Результаты тестирования</h1>
+                <h1><i class="fas fa-chart-line"></i> Тестілеу нәтижелері</h1>
                 <div class="law-indicator results-law">
                     <i class="fas fa-scale-balanced"></i>
-                    <span id="results-law-name">Закон 1</span>
+                    <span id="results-law-name">Заң 1</span>
                 </div>
             </div>
             
             <div class="score-container">
                 <div class="score-circle">
                     <div class="score-value" id="score-percentage">0%</div>
-                    <div class="score-label">правильных ответов</div>
+                    <div class="score-label">дұрыс жауаптар</div>
                 </div>
                 
                 <div class="score-details">
                     <div class="score-detail correct">
                         <span class="score-count" id="correct-count">0</span>
-                        <span class="score-text">Правильных ответов</span>
+                        <span class="score-text">Дұрыс жауаптар</span>
                     </div>
                     <div class="score-detail incorrect">
                         <span class="score-count" id="incorrect-count">0</span>
-                        <span class="score-text">Неправильных ответов</span>
+                        <span class="score-text">Дұрыс емес жауаптар</span>
                     </div>
                     <div class="score-detail total">
                         <span class="score-count" id="total-count">0</span>
-                        <span class="score-text">Всего вопросов</span>
+                        <span class="score-text">Барлық сұрақтар</span>
                     </div>
                 </div>
             </div>
             
             <div class="results-details">
-                <h3><i class="fas fa-list-check"></i> Детализация ответов</h3>
+                <h3><i class="fas fa-list-check"></i> Жауаптарды нақтылау</h3>
                 <div id="results-list" class="results-list">
-                    <!-- Список результатов будет добавлен динамически -->
+                    <!-- Нәтижелер тізімі динамикалық түрде қосылады -->
                 </div>
             </div>
             
             <div class="results-actions">
                 <button id="restart-test-btn" class="btn-primary">
-                    <i class="fas fa-redo"></i> Пройти тест заново
+                    <i class="fas fa-redo"></i> Тестті қайта тапсырыңыз
                 </button>
                 <button id="new-test-btn" class="btn-secondary">
-                    <i class="fas fa-book"></i> Выбрать другой закон
+                    <i class="fas fa-book"></i> Басқа заңды таңдаңыз
                 </button>
             </div>
         </div>
         
         <div class="footer">
-            <p>© 2023 Тестирование по законам. Все права защищены.</p>
+            <p>© 2023 заң бойынша тестілеу. Барлық құқықтар қорғалған.</p>
         </div>
     </div>
     

@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Элементы DOM
+    // DOM элементтері
     const testSelectionScreen = document.getElementById('test-selection-screen');
     const testScreen = document.getElementById('test-screen');
     const resultsScreen = document.getElementById('results-screen');
@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const restartTestBtn = document.getElementById('restart-test-btn');
     const newTestBtn = document.getElementById('new-test-btn');
     
-    // Элементы тестирования
+    // Тест
     const questionText = document.getElementById('question-text');
     const optionsContainer = document.getElementById('options-container');
     const currentQuestionElement = document.getElementById('current-question');
@@ -18,14 +18,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const currentLawElement = document.getElementById('current-law');
     const resultsLawName = document.getElementById('results-law-name');
     
-    // Элементы результатов
+    // Нәтижелер
     const scorePercentage = document.getElementById('score-percentage');
     const correctCount = document.getElementById('correct-count');
     const incorrectCount = document.getElementById('incorrect-count');
     const totalCount = document.getElementById('total-count');
     const resultsList = document.getElementById('results-list');
     
-    // Переменные состояния
+    // Состояние
     let currentTest = null;
     let currentQuestions = [];
     let currentQuestionIndex = 0;
@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeApp();
     
     function initializeApp() {
-        // Загружаем вопросы при инициализации
+        // Загружаем вопросы
         loadQuestions();
         
         // Добавляем обработчики событий
@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', function() {
             showScreen(testSelectionScreen);
         });
         
-        // Показываем экран выбора теста
+        // Показываем экран тестов
         showScreen(testSelectionScreen);
     }
     
