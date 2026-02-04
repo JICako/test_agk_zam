@@ -102,7 +102,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Перемешиваем вопросы и ограничиваем до 10
         shuffleArray(currentQuestions);
-        currentQuestions = currentQuestions.slice(0, 10);
+        currentQuestions = currentQuestions.slice(0, 50);
         
         // Перемешиваем варианты ответов в каждом вопросе
         currentQuestions.forEach(question => {
