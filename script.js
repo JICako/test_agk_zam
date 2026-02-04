@@ -1,5 +1,8 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // DOM элементтері
+    // Конфигурация
+    const QUESTIONS_PER_TEST = 50;
+    
+    // Элементы DOM
     const testSelectionScreen = document.getElementById('test-selection-screen');
     const testScreen = document.getElementById('test-screen');
     const resultsScreen = document.getElementById('results-screen');
@@ -9,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const restartTestBtn = document.getElementById('restart-test-btn');
     const newTestBtn = document.getElementById('new-test-btn');
     
-    // Тест
+    // Элементы тестирования
     const questionText = document.getElementById('question-text');
     const optionsContainer = document.getElementById('options-container');
     const currentQuestionElement = document.getElementById('current-question');
@@ -18,32 +21,42 @@ document.addEventListener('DOMContentLoaded', function() {
     const currentLawElement = document.getElementById('current-law');
     const resultsLawName = document.getElementById('results-law-name');
     
-    // Нәтижелер
+    // Элементы результатов
     const scorePercentage = document.getElementById('score-percentage');
     const correctCount = document.getElementById('correct-count');
     const incorrectCount = document.getElementById('incorrect-count');
     const totalCount = document.getElementById('total-count');
     const resultsList = document.getElementById('results-list');
     
-    // Состояние
-    let currentTest = null;
+    // Переменные состояния
     let currentQuestions = [];
     let currentQuestionIndex = 0;
     let userAnswers = [];
     let testResults = [];
     let selectedLaw = 1;
-    let allQuestionsData = null;
+    let allQuestionsByLaw = {};
+    let isLoading = false;
     
     // Инициализация
     initializeApp();
     
     function initializeApp() {
-        // Загружаем вопросы
+        // Загружаем вопросы при инициализации
         loadQuestions();
         
         // Добавляем обработчики событий
         lawCards.forEach(card => {
             card.addEventListener('click', () => {
+                if (isLoading) {
+                    alert('Вопросы еще загружаются. Пожалуйста, подождите...');
+                    return;
+                }
+                
+                if (Object.keys(allQuestionsByLaw).length === 0) {
+                    alert('Вопросы не загружены. Проверьте наличие файла questions.json и подключение к интернету.');
+                    return;
+                }
+                
                 selectedLaw = parseInt(card.getAttribute('data-law'));
                 startTest(selectedLaw);
             });
@@ -63,46 +76,114 @@ document.addEventListener('DOMContentLoaded', function() {
             showScreen(testSelectionScreen);
         });
         
-        // Показываем экран тестов
+        // Показываем экран выбора теста
         showScreen(testSelectionScreen);
     }
     
     async function loadQuestions() {
+        isLoading = true;
+        
+        // Показываем индикатор загрузки
+        const loadingIndicator = document.createElement('div');
+        loadingIndicator.className = 'loading-indicator';
+        loadingIndicator.innerHTML = '<p><i class="fas fa-spinner fa-spin"></i> Загрузка вопросов...</p>';
+        document.querySelector('.law-selection').appendChild(loadingIndicator);
+        
         try {
+            // Загружаем вопросы из JSON файла
             const response = await fetch('questions.json');
             
             if (!response.ok) {
-                throw new Error(`Ошибка загрузки вопросов: ${response.status}`);
+                throw new Error(`HTTP ошибка! Статус: ${response.status}`);
             }
             
-            allQuestionsData = await response.json();
+            const allQuestionsData = await response.json();
             console.log('Вопросы успешно загружены:', allQuestionsData.length);
+            
+            // Группируем вопросы по законам
+            allQuestionsByLaw = groupQuestionsByLaw(allQuestionsData);
+            
+            // Убираем индикатор загрузки
+            loadingIndicator.remove();
+            
+            // Показываем сообщение об успешной загрузке
+            const successMessage = document.createElement('div');
+            successMessage.className = 'success-message';
+            
+            // Подсчитываем общее количество вопросов по всем законам
+            let totalQuestions = 0;
+            for (let law in allQuestionsByLaw) {
+                totalQuestions += allQuestionsByLaw[law].length;
+            }
+            
+            successMessage.innerHTML = `<p><i class="fas fa-check-circle"></i> Загружено ${totalQuestions} вопросов</p>`;
+            document.querySelector('.law-selection').appendChild(successMessage);
+            
+            // Через 3 секунды убираем сообщение
+            setTimeout(() => {
+                successMessage.remove();
+            }, 3000);
             
         } catch (error) {
             console.error('Ошибка загрузки вопросов:', error);
-            // В случае ошибки создаем демо-вопросы
-            allQuestionsData = generateDemoQuestions();
+            
+            // Убираем индикатор загрузки
+            loadingIndicator.remove();
+            
+            // Показываем сообщение об ошибке
+            const errorMessage = document.createElement('div');
+            errorMessage.className = 'error-message';
+            errorMessage.innerHTML = `
+                <p><i class="fas fa-exclamation-triangle"></i> Ошибка загрузки вопросов</p>
+                <p>${error.message}</p>
+                <p>Убедитесь, что файл questions.json находится в той же директории, что и index.html</p>
+                <p>Или запустите сайт на локальном сервере (например, через Live Server в VS Code)</p>
+            `;
+            document.querySelector('.law-selection').appendChild(errorMessage);
+            
+            // Блокируем карточки законов
+            lawCards.forEach(card => {
+                card.style.opacity = '0.5';
+                card.style.cursor = 'not-allowed';
+                card.style.pointerEvents = 'none';
+            });
+            
+        } finally {
+            isLoading = false;
         }
     }
     
+    function groupQuestionsByLaw(questions) {
+        const grouped = {1: [], 2: [], 3: [], 4: [], 5: []};
+        
+        questions.forEach(question => {
+            const law = parseInt(question.law);
+            if (law >= 1 && law <= 5) {
+                grouped[law].push(question);
+            }
+        });
+        
+        return grouped;
+    }
+    
     function startTest(lawNumber) {
-        if (!allQuestionsData) {
-            alert('Вопросы еще загружаются. Пожалуйста, подождите...');
+        // Получаем все вопросы для выбранного закона
+        const allLawQuestions = allQuestionsByLaw[lawNumber] || [];
+        
+        // Проверяем, есть ли вопросы для выбранного закона
+        if (allLawQuestions.length === 0) {
+            alert(`Для закона ${lawNumber} нет вопросов. Пожалуйста, выберите другой закон.`);
             return;
         }
         
-        // Фильтруем вопросы по выбранному закону
-        currentQuestions = allQuestionsData.filter(q => q.law === lawNumber);
-        
-        // Если вопросов нет, используем демо-вопросы для этого закона
-        if (currentQuestions.length === 0) {
-            const demoQuestions = generateDemoQuestions();
-            currentQuestions = demoQuestions.filter(q => q.law === lawNumber);
+        // Проверяем, достаточно ли вопросов
+        if (allLawQuestions.length < QUESTIONS_PER_TEST) {
+            alert(`Для закона ${lawNumber} доступно только ${allLawQuestions.length} вопросов. Тест будет содержать все доступные вопросы.`);
         }
         
-        // Перемешиваем вопросы и ограничиваем до 10
-        shuffleArray(currentQuestions);
-        currentQuestions = currentQuestions.slice(0, 50);
+        // Выбираем случайные вопросы без повторений
+        const questionsToTake = Math.min(QUESTIONS_PER_TEST, allLawQuestions.length);
+        currentQuestions = getRandomQuestions(allLawQuestions, questionsToTake);
         
         // Перемешиваем варианты ответов в каждом вопросе
         currentQuestions.forEach(question => {
@@ -127,6 +208,24 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Загружаем первый вопрос
         loadQuestion();
+    }
+    
+    function getRandomQuestions(allQuestions, count) {
+        // Создаем копию массива вопросов
+        const questionsCopy = [...allQuestions];
+        const selectedQuestions = [];
+        
+        // Выбираем случайные вопросы без повторений
+        for (let i = 0; i < count && questionsCopy.length > 0; i++) {
+            // Выбираем случайный индекс
+            const randomIndex = Math.floor(Math.random() * questionsCopy.length);
+            
+            // Извлекаем вопрос по индексу
+            const randomQuestion = questionsCopy.splice(randomIndex, 1)[0];
+            selectedQuestions.push(randomQuestion);
+        }
+        
+        return selectedQuestions;
     }
     
     function loadQuestion() {
@@ -278,266 +377,5 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Показать выбранный экран
         screen.classList.add('active');
-    }
-    
-    function generateDemoQuestions() {
-        // Демо-вопросы для случая, если файл questions.json недоступен
-        return [
-            // Закон 1
-            {
-                law: 1,
-                question: "Что является основным принципом первого закона?",
-                correctAnswer: "Равенство всех перед законом",
-                incorrectAnswers: [
-                    "Приоритет государства над личностью",
-                    "Ограничение прав граждан",
-                    "Свобода от ответственности"
-                ]
-            },
-            {
-                law: 1,
-                question: "С какого момента закон вступает в силу?",
-                correctAnswer: "После официального опубликования",
-                incorrectAnswers: [
-                    "С момента подписания",
-                    "Через месяц после принятия",
-                    "После рассмотрения конституционным судом"
-                ]
-            },
-            {
-                law: 1,
-                question: "Кто является субъектом права по первому закону?",
-                correctAnswer: "Физические и юридические лица",
-                incorrectAnswers: [
-                    "Только граждане государства",
-                    "Только государственные органы",
-                    "Только совершеннолетние"
-                ]
-            },
-            {
-                law: 1,
-                question: "Что гарантирует первый закон?",
-                correctAnswer: "Защиту прав и свобод",
-                incorrectAnswers: [
-                    "Бесплатное жилье",
-                    "Пожизненную пенсию",
-                    "Освобождение от налогов"
-                ]
-            },
-            {
-                law: 1,
-                question: "Какой орган осуществляет правосудие?",
-                correctAnswer: "Суд",
-                incorrectAnswers: [
-                    "Правительство",
-                    "Парламент",
-                    "Президент"
-                ]
-            },
-            // Закон 2
-            {
-                law: 2,
-                question: "Что является обязанностью гражданина по второму закону?",
-                correctAnswer: "Соблюдение законов",
-                incorrectAnswers: [
-                    "Участие в выборах",
-                    "Служба в армии",
-                    "Уплата налогов"
-                ]
-            },
-            {
-                law: 2,
-                question: "Какое право гарантирует второй закон?",
-                correctAnswer: "Право на труд",
-                incorrectAnswers: [
-                    "Право на бесплатное образование",
-                    "Право на жилье",
-                    "Право на отдых за границей"
-                ]
-            },
-            {
-                law: 2,
-                question: "С какого возраста наступает полная дееспособность?",
-                correctAnswer: "С 18 лет",
-                incorrectAnswers: [
-                    "С 16 лет",
-                    "С 21 года",
-                    "С 25 лет"
-                ]
-            },
-            {
-                law: 2,
-                question: "Что защищает второй закон?",
-                correctAnswer: "Трудовые права граждан",
-                incorrectAnswers: [
-                    "Права животных",
-                    "Авторские права",
-                    "Права иностранцев"
-                ]
-            },
-            {
-                law: 2,
-                question: "Какой документ подтверждает личность?",
-                correctAnswer: "Паспорт",
-                incorrectAnswers: [
-                    "Водительские права",
-                    "Свидетельство о рождении",
-                    "Трудовая книжка"
-                ]
-            },
-            // Закон 3
-            {
-                law: 3,
-                question: "Что регулирует третий закон?",
-                correctAnswer: "Процессуальные нормы",
-                incorrectAnswers: [
-                    "Уголовное право",
-                    "Гражданское право",
-                    "Административное право"
-                ]
-            },
-            {
-                law: 3,
-                question: "Сколько стадий в судебном процессе?",
-                correctAnswer: "Три",
-                incorrectAnswers: [
-                    "Две",
-                    "Четыре",
-                    "Пять"
-                ]
-            },
-            {
-                law: 3,
-                question: "Кто представляет сторону защиты в суде?",
-                correctAnswer: "Адвокат",
-                incorrectAnswers: [
-                    "Прокурор",
-                    "Судья",
-                    "Секретарь суда"
-                ]
-            },
-            {
-                law: 3,
-                question: "Что такое апелляция?",
-                correctAnswer: "Обжалование решения суда",
-                incorrectAnswers: [
-                    "Первая инстанция",
-                    "Исполнение решения",
-                    "Предварительное следствие"
-                ]
-            },
-            {
-                law: 3,
-                question: "Сколько времени дается на подачу апелляции?",
-                correctAnswer: "Месяц",
-                incorrectAnswers: [
-                    "Неделя",
-                    "Два месяца",
-                    "Три месяца"
-                ]
-            },
-            // Закон 4
-            {
-                law: 4,
-                question: "Что относится к административным правонарушениям?",
-                correctAnswer: "Нарушение правил дорожного движения",
-                incorrectAnswers: [
-                    "Кража",
-                    "Убийство",
-                    "Мошенничество"
-                ]
-            },
-            {
-                law: 4,
-                question: "Кто рассматривает административные дела?",
-                correctAnswer: "Административная комиссия",
-                incorrectAnswers: [
-                    "Уголовный суд",
-                    "Арбитражный суд",
-                    "Конституционный суд"
-                ]
-            },
-            {
-                law: 4,
-                question: "Какой максимальный штраф по административному кодексу?",
-                correctAnswer: "5000 рублей",
-                incorrectAnswers: [
-                    "1000 рублей",
-                    "10000 рублей",
-                    "50000 рублей"
-                ]
-            },
-            {
-                law: 4,
-                question: "Что такое административный арест?",
-                correctAnswer: "Изоляция от общества на срок до 15 суток",
-                incorrectAnswers: [
-                    "Домашний арест",
-                    "Пожизненное заключение",
-                    "Исправительные работы"
-                ]
-            },
-            {
-                law: 4,
-                question: "Кто имеет право составлять протокол об административном правонарушении?",
-                correctAnswer: "Сотрудник полиции",
-                incorrectAnswers: [
-                    "Любой гражданин",
-                    "Судья",
-                    "Адвокат"
-                ]
-            },
-            // Закон 5
-            {
-                law: 5,
-                question: "Что регулирует пятый закон?",
-                correctAnswer: "Заключительные положения",
-                incorrectAnswers: [
-                    "Основные права",
-                    "Процессуальные нормы",
-                    "Административные отношения"
-                ]
-            },
-            {
-                law: 5,
-                question: "Когда закон считается утратившим силу?",
-                correctAnswer: "После принятия нового закона",
-                incorrectAnswers: [
-                    "Через 10 лет после принятия",
-                    "После изменения конституции",
-                    "После решения суда"
-                ]
-            },
-            {
-                law: 5,
-                question: "Что такое переходные положения?",
-                correctAnswer: "Нормы, действующие до полного вступления закона в силу",
-                incorrectAnswers: [
-                    "Основные принципы закона",
-                    "Поправки к закону",
-                    "Комментарии к закону"
-                ]
-            },
-            {
-                law: 5,
-                question: "Кто имеет право вносить изменения в закон?",
-                correctAnswer: "Законодательный орган",
-                incorrectAnswers: [
-                    "Президент",
-                    "Правительство",
-                    "Конституционный суд"
-                ]
-            },
-            {
-                law: 5,
-                question: "Какой документ является официальным толкованием закона?",
-                correctAnswer: "Постановление пленума верховного суда",
-                incorrectAnswers: [
-                    "Комментарий юриста",
-                    "Научная статья",
-                    "Учебник по праву"
-                ]
-            }
-        ];
     }
 });
