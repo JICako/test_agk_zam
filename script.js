@@ -1,8 +1,8 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Конфигурация
-    const QUESTIONS_PER_TEST = 10; // Можно изменить на 50
+    const QUESTIONS_PER_TEST = 10;
     
-    // Названия законов для отображения
+    // Названия законов
     const lawNames = {
         'ru': {
             1: 'Трудовой кодекс',
@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const resultsList = document.getElementById('results-list');
     const lawCards = document.querySelectorAll('.law-card');
     
-    // Состояние приложения
+    // Состояние
     const state = {
         currentQuestions: [],
         currentQuestionIndex: 0,
@@ -64,9 +64,7 @@ document.addEventListener('DOMContentLoaded', function() {
         questionsByLaw: { 1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: [] },
         isLoading: false,
         language: localStorage.getItem('test_language') || 'ru',
-        totalQuestionsLoaded: 0,
-        // Добавляем кеш для загруженных вопросов
-        questionsCache: {}
+        totalQuestionsLoaded: 0
     };
     
     // Словари переводов
@@ -90,12 +88,11 @@ document.addEventListener('DOMContentLoaded', function() {
             'law7_title': 'Уголовный кодекс',
             'law7_desc': 'Преступления и наказания',
             'instructions': 'Инструкция',
-            'instruction1': 'Выберите один из доступных тестов для прохождения',
+            'instruction1': 'Выберите один из семи тестов для прохождения',
             'instruction2': 'Каждый тест содержит случайные вопросы без повторений',
             'instruction3': 'В каждом вопросе нужно выбрать один правильный ответ',
             'instruction4': 'После ответа вы увидите правильный вариант',
             'instruction5': 'В конце теста вы получите детальный результат',
-            'instruction6': 'Тесты 5-7 находятся в разработке и будут доступны в ближайшее время',
             'question': 'Вопрос',
             'of': 'из',
             'law': 'Закон',
@@ -118,11 +115,9 @@ document.addEventListener('DOMContentLoaded', function() {
             'error_loading': 'Ошибка загрузки вопросов',
             'no_questions': 'Для этого теста нет вопросов',
             'choose_another_law': 'Пожалуйста, выберите другой тест.',
-            'active': 'Активный',
-            'in_development': 'В разработке',
             'available': 'доступно',
             'test_will_contain': 'Тест будет содержать все доступные вопросы.',
-            'test_in_development': 'Этот тест находится в разработке и будет доступен в ближайшее время.'
+            'active': 'Активный'
         },
         'kz': {
             'title': 'Заңдар бойынша тестілеу',
@@ -143,12 +138,11 @@ document.addEventListener('DOMContentLoaded', function() {
             'law7_title': 'Кылмыстық кодекс',
             'law7_desc': 'Қылмыстар және жазалар',
             'instructions': 'Нұсқаулық',
-            'instruction1': 'Өту үшін қолжетімді сынақтардың бірін таңдаңыз',
+            'instruction1': 'Өту үшін жеті сынақтың бірін таңдаңыз',
             'instruction2': 'Әрбір сынақта қайталанбайтын кездейсоқ сұрақтар бар',
             'instruction3': 'Әрбір сұрақта бір дұрыс жауапты таңдау керек',
             'instruction4': 'Жауап бергеннен кейін дұрыс нұсқаны көресіз',
             'instruction5': 'Сынақ аяқталғаннан кейін толық нәтиже аласыз',
-            'instruction6': '5-7 сынақтар әзірленуде және жақын арада қолжетімді болады',
             'question': 'Сұрақ',
             'of': '-дан',
             'law': 'Заң',
@@ -171,43 +165,69 @@ document.addEventListener('DOMContentLoaded', function() {
             'error_loading': 'Сұрақтарды жүктеу кезінде қате пайда болды',
             'no_questions': 'Бұл сынақ үшін сұрақтар жоқ',
             'choose_another_law': 'Басқа сынақты таңдаңыз.',
-            'active': 'Белсенді',
-            'in_development': 'Әзірленуде',
             'available': 'қолжетімді',
             'test_will_contain': 'Тест барлық қолжетімді сұрақтарды қамтиды.',
-            'test_in_development': 'Бұл сынақ әзірленуде және жақын арада қолжетімді болады.'
+            'active': 'Белсенді'
         }
     };
     
-    // Инициализация приложения
+    // Инициализация
     function init() {
-        console.log('Приложение инициализировано');
         setupEventListeners();
         updateLanguageButtons();
         updateInterfaceTexts();
         loadQuestions();
         showScreen(screens.selection);
+        
+        // Принудительная активация всех карточек
+        forceActivateAllCards();
     }
     
-    // Настройка обработчиков событий
+    // Принудительная активация всех карточек
+    function forceActivateAllCards() {
+        lawCards.forEach(card => {
+            const lawNumber = parseInt(card.getAttribute('data-law'));
+            if (lawNumber >= 1 && lawNumber <= 7) {
+                // Убираем класс inactive если есть
+                card.classList.remove('inactive');
+                // Добавляем класс active если нет
+                if (!card.classList.contains('active')) {
+                    card.classList.add('active');
+                }
+                
+                // Принудительно меняем стили
+                card.style.opacity = '1';
+                card.style.cursor = 'pointer';
+                card.style.pointerEvents = 'auto';
+                card.style.background = '#f8f9fa';
+                
+                // Обновляем статус
+                const statusDiv = card.querySelector('.law-status');
+                if (statusDiv) {
+                    statusDiv.className = 'law-status active-status';
+                    statusDiv.innerHTML = `<i class="fas fa-check-circle"></i> ${getTranslation('active')}`;
+                }
+                
+                // Обновляем цвет номера
+                const numberDiv = card.querySelector('.law-number');
+                if (numberDiv) {
+                    numberDiv.style.background = '#3498db';
+                }
+                
+                // Обновляем цвет заголовка
+                const title = card.querySelector('h3');
+                if (title) {
+                    title.style.color = '#2c3e50';
+                }
+            }
+        });
+    }
+    
+    // Настройка обработчиков
     function setupEventListeners() {
-        console.log('Настройка обработчиков событий');
-        
-        // Карточки законов
         lawCards.forEach(card => {
             card.addEventListener('click', () => {
                 const lawNumber = parseInt(card.getAttribute('data-law'));
-                const isActive = card.classList.contains('active');
-                const isInactive = card.classList.contains('inactive');
-                
-                console.log(`Клик по карточке закона ${lawNumber}, активна: ${isActive}, в разработке: ${isInactive}`);
-                
-                if (isInactive) {
-                    alert(getTranslation('test_in_development'));
-                    return;
-                }
-                
-                if (!isActive) return;
                 
                 if (state.isLoading) {
                     alert(getTranslation('loading'));
@@ -220,18 +240,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 
                 state.selectedLaw = lawNumber;
-                console.log(`Запуск теста для закона ${lawNumber}`);
                 startTest(state.selectedLaw);
             });
         });
         
-        // Кнопки навигации
         if (buttons.back) buttons.back.addEventListener('click', () => showScreen(screens.selection));
         if (buttons.next) buttons.next.addEventListener('click', goToNextQuestion);
         if (buttons.restart) buttons.restart.addEventListener('click', () => startTest(state.selectedLaw));
         if (buttons.newTest) buttons.newTest.addEventListener('click', () => showScreen(screens.selection));
         
-        // Переключение языка
         if (buttons.langRu) {
             buttons.langRu.addEventListener('click', () => {
                 if (state.language !== 'ru') switchLanguage('ru');
@@ -245,154 +262,145 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Загрузка вопросов из JSON файла
+    // Загрузка вопросов
     async function loadQuestions() {
-        console.log(`Начало загрузки вопросов для языка: ${state.language}`);
         state.isLoading = true;
         
-        // Показываем индикатор загрузки
         const loadingIndicator = document.createElement('div');
         loadingIndicator.className = 'loading-indicator';
         loadingIndicator.innerHTML = `<p><i class="fas fa-spinner fa-spin"></i> ${getTranslation('loading')}</p>`;
         
         const lawSelection = document.querySelector('.law-selection');
-        
-        // Удаляем предыдущий индикатор, если есть
-        const existingIndicator = lawSelection.querySelector('.loading-indicator');
-        if (existingIndicator) {
-            existingIndicator.remove();
+        if (lawSelection.querySelector('.loading-indicator')) {
+            lawSelection.querySelector('.loading-indicator').remove();
         }
-        
-        // Удаляем предыдущие сообщения об ошибке или успехе
-        const existingMessages = lawSelection.querySelectorAll('.error-message, .success-message');
-        existingMessages.forEach(msg => msg.remove());
-        
         lawSelection.appendChild(loadingIndicator);
         
         try {
-            // Пытаемся загрузить вопросы для текущего языка
             const filename = `questions_${state.language}.json`;
-            console.log(`Загрузка файла: ${filename}`);
-            
             const response = await fetch(filename);
             
             if (!response.ok) {
-                throw new Error(`HTTP ошибка: ${response.status} ${response.statusText}`);
+                throw new Error(`HTTP ошибка: ${response.status}`);
             }
             
             const questionsData = await response.json();
-            console.log(`Файл загружен, получено данных:`, questionsData);
             
             if (!Array.isArray(questionsData)) {
-                console.error('Ожидался массив вопросов, получено:', typeof questionsData);
-                throw new Error('Некорректный формат JSON файла: ожидается массив вопросов');
+                throw new Error('Некорректный формат JSON файла');
             }
             
             // Группируем вопросы по законам
             state.questionsByLaw = groupQuestionsByLaw(questionsData);
             
-            // Подсчитываем общее количество загруженных вопросов
-            let totalLoaded = 0;
-            for (let law = 1; law <= 7; law++) {
-                totalLoaded += state.questionsByLaw[law].length;
+            // ДОБАВЛЯЕМ ДЕМО-ВОПРОСЫ для тестов 5-7 если их нет
+            for (let law = 5; law <= 7; law++) {
+                if (state.questionsByLaw[law].length === 0) {
+                    addDemoQuestionsForLaw(law, 5);
+                }
             }
-            state.totalQuestionsLoaded = totalLoaded;
             
-            console.log('Вопросы загружены по законам:');
+            // Подсчитываем общее количество
+            let totalQuestions = 0;
             for (let law = 1; law <= 7; law++) {
-                console.log(`Закон ${law}: ${state.questionsByLaw[law].length} вопросов`);
+                totalQuestions += state.questionsByLaw[law].length;
             }
-            console.log(`Всего загружено: ${totalLoaded} вопросов`);
+            state.totalQuestionsLoaded = totalQuestions;
             
-            // Убираем индикатор загрузки
+            // Убираем индикатор
             loadingIndicator.remove();
             
-            // Показываем сообщение об успешной загрузке
+            // Сообщение об успешной загрузке
             const successMessage = document.createElement('div');
             successMessage.className = 'success-message';
             
-            let messageText = `<p><i class="fas fa-check-circle"></i> ${getTranslation('loaded')} ${totalLoaded} ${getTranslation('questions')}`;
-            
-            // Добавляем информацию по законам
-            let lawsWithQuestions = [];
-            for (let law = 1; law <= 4; law++) { // Только для активных законов
+            let lawsInfo = [];
+            for (let law = 1; law <= 7; law++) {
                 if (state.questionsByLaw[law].length > 0) {
-                    lawsWithQuestions.push(`${lawNames[state.language][law]}: ${state.questionsByLaw[law].length}`);
+                    const isDemo = state.questionsByLaw[law][0] && state.questionsByLaw[law][0].question.includes('[Демо]');
+                    lawsInfo.push(`${lawNames[state.language][law]}: ${state.questionsByLaw[law].length}${isDemo ? ' (демо)' : ''}`);
                 }
             }
             
-            if (lawsWithQuestions.length > 0) {
-                messageText += `<br><small>${lawsWithQuestions.join(', ')}</small>`;
-            }
+            successMessage.innerHTML = `<p><i class="fas fa-check-circle"></i> ${getTranslation('loaded')} ${totalQuestions} ${getTranslation('questions')}</p>`;
             
-            messageText += '</p>';
-            successMessage.innerHTML = messageText;
+            if (lawsInfo.length > 0) {
+                successMessage.innerHTML += `<p><small>${lawsInfo.join(', ')}</small></p>`;
+            }
             
             lawSelection.appendChild(successMessage);
             
-            // Через 5 секунд убираем сообщение
             setTimeout(() => {
-                if (successMessage.parentNode) {
-                    successMessage.remove();
-                }
+                successMessage.remove();
             }, 5000);
             
         } catch (error) {
-            console.error('Ошибка загрузки вопросов:', error);
+            console.error('Ошибка загрузки:', error);
             
-            // Убираем индикатор загрузки
             loadingIndicator.remove();
             
-            // Показываем сообщение об ошибке
+            // Если файл не найден, создаем демо-вопросы для ВСЕХ тестов 1-7
+            createDemoQuestionsForAllLaws();
+            
             const errorMessage = document.createElement('div');
             errorMessage.className = 'error-message';
             errorMessage.innerHTML = `
                 <p><i class="fas fa-exclamation-triangle"></i> ${getTranslation('error_loading')}</p>
                 <p>${error.message}</p>
-                <p>Убедитесь, что файл questions_${state.language}.json находится в той же папке</p>
-                <p>и имеет правильный формат JSON</p>
+                <p>Используются демо-вопросы для всех тестов</p>
             `;
             lawSelection.appendChild(errorMessage);
             
-            // Создаем демо-вопросы для тестирования
-            console.log('Создание демо-вопросов');
-            createDemoQuestions();
         } finally {
             state.isLoading = false;
-            console.log('Загрузка вопросов завершена');
         }
     }
     
-    // Создание демо-вопросов для тестирования
-    function createDemoQuestions() {
-        const demoQuestions = [];
-        console.log('Создание демо-вопросов для законов 1-4');
+    // Создание демо-вопросов для всех законов 1-7
+    function createDemoQuestionsForAllLaws() {
+        console.log('Создание демо-вопросов для всех тестов 1-7');
         
-        // Создаем демо-вопросы для законов 1-4
-        for (let law = 1; law <= 4; law++) {
-            for (let i = 1; i <= 5; i++) { // Создаем по 5 демо-вопросов на каждый закон
-                demoQuestions.push({
-                    law: law,
-                    question: `[Демо] ${lawNames[state.language][law]}. Вопрос ${i}: Основные положения?`,
-                    correctAnswer: `Правильный ответ ${i}`,
-                    incorrectAnswers: [
-                        `Неправильный вариант ${i}.1`,
-                        `Неправильный вариант ${i}.2`,
-                        `Неправильный вариант ${i}.3`
-                    ]
-                });
-            }
-        }
-        
-        state.questionsByLaw = groupQuestionsByLaw(demoQuestions);
-        
-        let totalLoaded = 0;
         for (let law = 1; law <= 7; law++) {
-            totalLoaded += state.questionsByLaw[law].length;
+            addDemoQuestionsForLaw(law, 5);
         }
-        state.totalQuestionsLoaded = totalLoaded;
         
-        console.log('Демо-вопросы созданы:', state.totalQuestionsLoaded);
+        // Подсчет общего количества
+        let total = 0;
+        for (let law = 1; law <= 7; law++) {
+            total += state.questionsByLaw[law].length;
+        }
+        state.totalQuestionsLoaded = total;
+        
+        console.log(`Создано демо-вопросов: ${total}`);
+    }
+    
+    // Добавление демо-вопросов для конкретного закона
+    function addDemoQuestionsForLaw(lawNumber, count) {
+        const demoQuestions = [];
+        
+        for (let i = 1; i <= count; i++) {
+            demoQuestions.push({
+                law: lawNumber,
+                question: `[Демо] ${lawNames[state.language][lawNumber]}. Вопрос ${i}: Основные положения?`,
+                correctAnswer: `Правильный ответ ${i}`,
+                incorrectAnswers: [
+                    `Неправильный вариант ${i}.1`,
+                    `Неправильный вариант ${i}.2`,
+                    `Неправильный вариант ${i}.3`
+                ]
+            });
+        }
+        
+        // Добавляем демо-вопросы к уже существующим
+        if (!state.questionsByLaw[lawNumber]) {
+            state.questionsByLaw[lawNumber] = [];
+        }
+        
+        // Добавляем только если еще нет вопросов для этого закона
+        if (state.questionsByLaw[lawNumber].length === 0) {
+            state.questionsByLaw[lawNumber].push(...demoQuestions);
+            console.log(`Добавлено ${count} демо-вопросов для закона ${lawNumber}`);
+        }
     }
     
     // Группировка вопросов по законам
@@ -400,73 +408,26 @@ document.addEventListener('DOMContentLoaded', function() {
         const grouped = { 1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: [] };
         
         if (Array.isArray(questions)) {
-            console.log(`Обработка массива из ${questions.length} вопросов`);
-            
-            questions.forEach((question, index) => {
+            questions.forEach(question => {
                 try {
-                    // Проверяем наличие необходимых полей
-                    if (!question || typeof question !== 'object') {
-                        console.warn(`Вопрос ${index} пропущен: не является объектом`, question);
+                    if (!question || !question.law || !question.question || !question.correctAnswer || !question.incorrectAnswers) {
+                        console.warn('Пропущен некорректный вопрос:', question);
                         return;
                     }
                     
-                    // Проверяем наличие обязательных полей
-                    if (!question.question || typeof question.question !== 'string') {
-                        console.warn(`Вопрос ${index} пропущен: отсутствует или некорректен текст вопроса`, question);
-                        return;
+                    const law = parseInt(question.law);
+                    if (law >= 1 && law <= 7) {
+                        grouped[law].push({
+                            law: law,
+                            question: question.question,
+                            correctAnswer: question.correctAnswer,
+                            incorrectAnswers: question.incorrectAnswers
+                        });
                     }
-                    
-                    if (!question.correctAnswer || typeof question.correctAnswer !== 'string') {
-                        console.warn(`Вопрос ${index} пропущен: отсутствует или некорректен правильный ответ`, question);
-                        return;
-                    }
-                    
-                    if (!question.incorrectAnswers || !Array.isArray(question.incorrectAnswers)) {
-                        console.warn(`Вопрос ${index} пропущен: отсутствует или некорректен массив неправильных ответов`, question);
-                        return;
-                    }
-                    
-                    // Преобразуем номер закона
-                    let law;
-                    if (typeof question.law === 'string') {
-                        law = parseInt(question.law, 10);
-                    } else if (typeof question.law === 'number') {
-                        law = question.law;
-                    } else {
-                        console.warn(`Вопрос ${index} пропущен: некорректный тип номера закона`, question.law);
-                        return;
-                    }
-                    
-                    // Проверяем, что номер закона от 1 до 7
-                    if (isNaN(law) || law < 1 || law > 7) {
-                        console.warn(`Вопрос ${index} пропущен: номер закона вне диапазона 1-7`, law);
-                        return;
-                    }
-                    
-                    // Проверяем, что в массиве неправильных ответов есть хотя бы 1 элемент
-                    if (question.incorrectAnswers.length < 1) {
-                        console.warn(`Вопрос ${index} пропущен: недостаточно неправильных ответов`, question.incorrectAnswers);
-                        return;
-                    }
-                    
-                    // Очищаем текст от лишних пробелов
-                    const cleanedQuestion = {
-                        law: law,
-                        question: question.question.trim(),
-                        correctAnswer: question.correctAnswer.trim(),
-                        incorrectAnswers: question.incorrectAnswers.map(answer => 
-                            typeof answer === 'string' ? answer.trim() : String(answer)
-                        )
-                    };
-                    
-                    grouped[law].push(cleanedQuestion);
-                    
                 } catch (error) {
-                    console.error(`Ошибка при обработке вопроса ${index}:`, error, question);
+                    console.error('Ошибка обработки вопроса:', error, question);
                 }
             });
-        } else {
-            console.error('questions не является массивом:', typeof questions);
         }
         
         return grouped;
@@ -474,46 +435,31 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Начало теста
     function startTest(lawNumber) {
-        console.log(`Запуск теста для закона ${lawNumber} (${lawNames[state.language][lawNumber]})`);
-        
         const allLawQuestions = state.questionsByLaw[lawNumber] || [];
-        console.log(`Найдено вопросов для закона ${lawNumber}: ${allLawQuestions.length}`);
         
         if (allLawQuestions.length === 0) {
-            console.error(`Нет вопросов для закона ${lawNumber}`);
             alert(`${getTranslation('no_questions')} ${getTranslation('choose_another_law')}`);
             return;
         }
         
-        // Определяем количество вопросов для теста
         const questionsToTake = Math.min(QUESTIONS_PER_TEST, allLawQuestions.length);
-        console.log(`Будет выбрано ${questionsToTake} вопросов из ${allLawQuestions.length} доступных`);
         
         if (allLawQuestions.length < QUESTIONS_PER_TEST) {
-            const message = `${lawNames[state.language][lawNumber]}: ${getTranslation('available')} ${allLawQuestions.length} ${getTranslation('questions')}. ${getTranslation('test_will_contain')}`;
-            console.log(message);
-            alert(message);
+            alert(`${lawNames[state.language][lawNumber]}: ${getTranslation('available')} ${allLawQuestions.length} ${getTranslation('questions')}. ${getTranslation('test_will_contain')}`);
         }
         
-        // Выбираем случайные вопросы без повторений
+        // Выбираем случайные вопросы
         state.currentQuestions = getRandomQuestions(allLawQuestions, questionsToTake);
-        console.log(`Выбрано ${state.currentQuestions.length} случайных вопросов`);
         
-        // Перемешиваем варианты ответов в каждом вопросе
+        // Перемешиваем варианты ответов
         state.currentQuestions.forEach(question => {
-            if (question.correctAnswer && question.incorrectAnswers) {
-                // Собираем все ответы
-                const allAnswers = [question.correctAnswer, ...question.incorrectAnswers];
-                
-                // Перемешиваем ответы
-                question.allAnswers = shuffleArray(allAnswers);
-                
-                console.log(`Вопрос: ${question.question.substring(0, 50)}...`);
-                console.log(`Варианты ответов: ${question.allAnswers.length}`);
-            }
+            question.allAnswers = shuffleArray([
+                question.correctAnswer,
+                ...question.incorrectAnswers
+            ]);
         });
         
-        // Сбрасываем состояние теста
+        // Сбрасываем состояние
         state.currentQuestionIndex = 0;
         state.userAnswers = [];
         state.testResults = [];
@@ -539,71 +485,57 @@ document.addEventListener('DOMContentLoaded', function() {
         loadQuestion();
     }
     
-    // Выбор случайных вопросов без повторений
+    // Выбор случайных вопросов
     function getRandomQuestions(allQuestions, count) {
         if (allQuestions.length <= count) {
-            console.log(`Используем все ${allQuestions.length} доступных вопросов`);
             return [...allQuestions];
         }
         
-        console.log(`Выбираем ${count} случайных вопросов из ${allQuestions.length}`);
         const shuffled = [...allQuestions].sort(() => Math.random() - 0.5);
         return shuffled.slice(0, count);
     }
     
-    // Загрузка текущего вопроса
+    // Загрузка вопроса
     function loadQuestion() {
-        console.log(`Загрузка вопроса ${state.currentQuestionIndex + 1} из ${state.currentQuestions.length}`);
-        
         if (state.currentQuestionIndex >= state.currentQuestions.length) {
-            console.log('Все вопросы пройдены, показываем результаты');
             showResults();
             return;
         }
         
         const question = state.currentQuestions[state.currentQuestionIndex];
         
-        // Обновляем текст вопроса
-        if (questionText && question.question) {
+        if (questionText) {
             questionText.textContent = question.question;
         }
         
-        // Обновляем номер вопроса
         if (currentQuestionElement) {
             currentQuestionElement.textContent = state.currentQuestionIndex + 1;
         }
         
-        // Обновляем прогресс
         if (progressFill) {
             const progressPercent = (state.currentQuestionIndex / state.currentQuestions.length) * 100;
             progressFill.style.width = `${progressPercent}%`;
         }
         
-        // Очищаем контейнер с вариантами ответов
         if (optionsContainer) {
             optionsContainer.innerHTML = '';
             
-            // Создаем кнопки для вариантов ответов
-            if (question.allAnswers && Array.isArray(question.allAnswers)) {
-                question.allAnswers.forEach((answer, index) => {
-                    const optionBtn = document.createElement('button');
-                    optionBtn.className = 'option-btn';
-                    optionBtn.innerHTML = `
-                        <div class="option-letter">${String.fromCharCode(65 + index)}</div>
-                        <div class="option-text">${answer}</div>
-                    `;
-                    
-                    optionBtn.addEventListener('click', () => {
-                        console.log(`Выбран ответ: ${answer.substring(0, 30)}...`);
-                        selectAnswer(answer, question.correctAnswer);
-                    });
-                    
-                    optionsContainer.appendChild(optionBtn);
+            question.allAnswers.forEach((answer, index) => {
+                const optionBtn = document.createElement('button');
+                optionBtn.className = 'option-btn';
+                optionBtn.innerHTML = `
+                    <div class="option-letter">${String.fromCharCode(65 + index)}</div>
+                    <div class="option-text">${answer}</div>
+                `;
+                
+                optionBtn.addEventListener('click', () => {
+                    selectAnswer(answer, question.correctAnswer);
                 });
-            }
+                
+                optionsContainer.appendChild(optionBtn);
+            });
         }
         
-        // Деактивируем кнопку "Следующий вопрос"
         if (buttons.next) {
             buttons.next.disabled = true;
         }
@@ -611,13 +543,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Обработка выбора ответа
     function selectAnswer(selectedAnswer, correctAnswer) {
-        // Записываем ответ пользователя
         state.userAnswers[state.currentQuestionIndex] = selectedAnswer;
         
-        // Получаем все кнопки вариантов ответов
         const optionButtons = optionsContainer.querySelectorAll('.option-btn');
         
-        // Отключаем все кнопки и подсвечиваем правильные/неправильные ответы
         optionButtons.forEach(btn => {
             btn.disabled = true;
             
@@ -625,30 +554,24 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (answerText === correctAnswer) {
                 btn.classList.add('correct');
-                console.log('Ответ помечен как правильный');
             } else if (answerText === selectedAnswer && selectedAnswer !== correctAnswer) {
                 btn.classList.add('incorrect');
-                console.log('Ответ помечен как неправильный');
             }
         });
         
-        // Активируем кнопку "Следующий вопрос"
         if (buttons.next) {
             buttons.next.disabled = false;
         }
         
-        // Сохраняем результат для текущего вопроса
         state.testResults[state.currentQuestionIndex] = {
             question: state.currentQuestions[state.currentQuestionIndex].question,
             userAnswer: selectedAnswer,
             correctAnswer: correctAnswer,
             isCorrect: selectedAnswer === correctAnswer
         };
-        
-        console.log(`Результат вопроса: ${selectedAnswer === correctAnswer ? 'Правильно' : 'Неправильно'}`);
     }
     
-    // Переход к следующему вопросу
+    // Следующий вопрос
     function goToNextQuestion() {
         state.currentQuestionIndex++;
         
@@ -661,28 +584,20 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Показ результатов
     function showResults() {
-        console.log('Показ результатов теста');
-        
-        // Подсчет результатов
         const correctAnswers = state.testResults.filter(r => r.isCorrect).length;
         const totalQuestions = state.testResults.length;
         const score = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
         
-        console.log(`Результаты: ${correctAnswers} правильных из ${totalQuestions} (${score}%)`);
-        
-        // Обновление статистики
         if (scorePercentage) scorePercentage.textContent = `${score}%`;
         if (correctCount) correctCount.textContent = correctAnswers;
         if (incorrectCount) incorrectCount.textContent = totalQuestions - correctAnswers;
         if (totalCount) totalCount.textContent = totalQuestions;
         
-        // Анимация круговой диаграммы
         const scoreCircle = document.querySelector('.score-circle');
         if (scoreCircle) {
             scoreCircle.style.background = `conic-gradient(#3498db ${score}%, #ecf0f1 ${score}%)`;
         }
         
-        // Отображение детализации ответов
         if (resultsList) {
             resultsList.innerHTML = '';
             
@@ -710,13 +625,11 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
         
-        // Показываем экран результатов
         showScreen(screens.results);
     }
     
     // Переключение языка
     function switchLanguage(lang) {
-        console.log(`Переключение языка на ${lang}`);
         state.language = lang;
         localStorage.setItem('test_language', lang);
         
@@ -724,11 +637,10 @@ document.addEventListener('DOMContentLoaded', function() {
         updateInterfaceTexts();
         loadQuestions();
         
-        // Если тест был начат, возвращаем на экран выбора
         showScreen(screens.selection);
     }
     
-    // Обновление кнопок переключения языка
+    // Обновление кнопок языка
     function updateLanguageButtons() {
         if (buttons.langRu && buttons.langKz) {
             if (state.language === 'ru') {
@@ -754,9 +666,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Получение перевода
     function getTranslation(key) {
-        return translations[state.language] && translations[state.language][key] 
-            ? translations[state.language][key] 
-            : key;
+        return translations[state.language][key] || key;
     }
     
     // Перемешивание массива
@@ -778,9 +688,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         screen.classList.add('active');
-        console.log(`Активный экран: ${screen.id}`);
     }
     
-    // Запуск приложения
+    // Запуск
     init();
 });
