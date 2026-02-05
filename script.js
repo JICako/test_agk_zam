@@ -64,7 +64,9 @@ document.addEventListener('DOMContentLoaded', function() {
         questionsByLaw: { 1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: [] },
         isLoading: false,
         language: localStorage.getItem('test_language') || 'ru',
-        totalQuestionsLoaded: 0
+        totalQuestionsLoaded: 0,
+        // Добавляем кеш для загруженных вопросов
+        questionsCache: {}
     };
     
     // Словари переводов
@@ -179,6 +181,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Инициализация приложения
     function init() {
+        console.log('Приложение инициализировано');
         setupEventListeners();
         updateLanguageButtons();
         updateInterfaceTexts();
@@ -188,12 +191,16 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Настройка обработчиков событий
     function setupEventListeners() {
+        console.log('Настройка обработчиков событий');
+        
         // Карточки законов
         lawCards.forEach(card => {
             card.addEventListener('click', () => {
                 const lawNumber = parseInt(card.getAttribute('data-law'));
                 const isActive = card.classList.contains('active');
                 const isInactive = card.classList.contains('inactive');
+                
+                console.log(`Клик по карточке закона ${lawNumber}, активна: ${isActive}, в разработке: ${isInactive}`);
                 
                 if (isInactive) {
                     alert(getTranslation('test_in_development'));
@@ -213,6 +220,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 
                 state.selectedLaw = lawNumber;
+                console.log(`Запуск теста для закона ${lawNumber}`);
                 startTest(state.selectedLaw);
             });
         });
@@ -239,6 +247,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Загрузка вопросов из JSON файла
     async function loadQuestions() {
+        console.log(`Начало загрузки вопросов для языка: ${state.language}`);
         state.isLoading = true;
         
         // Показываем индикатор загрузки
@@ -247,29 +256,53 @@ document.addEventListener('DOMContentLoaded', function() {
         loadingIndicator.innerHTML = `<p><i class="fas fa-spinner fa-spin"></i> ${getTranslation('loading')}</p>`;
         
         const lawSelection = document.querySelector('.law-selection');
-        if (lawSelection.querySelector('.loading-indicator')) {
-            lawSelection.querySelector('.loading-indicator').remove();
+        
+        // Удаляем предыдущий индикатор, если есть
+        const existingIndicator = lawSelection.querySelector('.loading-indicator');
+        if (existingIndicator) {
+            existingIndicator.remove();
         }
+        
+        // Удаляем предыдущие сообщения об ошибке или успехе
+        const existingMessages = lawSelection.querySelectorAll('.error-message, .success-message');
+        existingMessages.forEach(msg => msg.remove());
+        
         lawSelection.appendChild(loadingIndicator);
         
         try {
             // Пытаемся загрузить вопросы для текущего языка
             const filename = `questions_${state.language}.json`;
+            console.log(`Загрузка файла: ${filename}`);
+            
             const response = await fetch(filename);
             
             if (!response.ok) {
-                throw new Error(`HTTP ошибка: ${response.status}`);
+                throw new Error(`HTTP ошибка: ${response.status} ${response.statusText}`);
             }
             
             const questionsData = await response.json();
+            console.log(`Файл загружен, получено данных:`, questionsData);
             
             if (!Array.isArray(questionsData)) {
-                throw new Error('Некорректный формат JSON файла');
+                console.error('Ожидался массив вопросов, получено:', typeof questionsData);
+                throw new Error('Некорректный формат JSON файла: ожидается массив вопросов');
             }
             
             // Группируем вопросы по законам
             state.questionsByLaw = groupQuestionsByLaw(questionsData);
-            state.totalQuestionsLoaded = questionsData.length;
+            
+            // Подсчитываем общее количество загруженных вопросов
+            let totalLoaded = 0;
+            for (let law = 1; law <= 7; law++) {
+                totalLoaded += state.questionsByLaw[law].length;
+            }
+            state.totalQuestionsLoaded = totalLoaded;
+            
+            console.log('Вопросы загружены по законам:');
+            for (let law = 1; law <= 7; law++) {
+                console.log(`Закон ${law}: ${state.questionsByLaw[law].length} вопросов`);
+            }
+            console.log(`Всего загружено: ${totalLoaded} вопросов`);
             
             // Убираем индикатор загрузки
             loadingIndicator.remove();
@@ -278,23 +311,34 @@ document.addEventListener('DOMContentLoaded', function() {
             const successMessage = document.createElement('div');
             successMessage.className = 'success-message';
             
-            let totalByLaw = 0;
-            for (let law = 1; law <= 7; law++) {
-                totalByLaw += state.questionsByLaw[law].length;
+            let messageText = `<p><i class="fas fa-check-circle"></i> ${getTranslation('loaded')} ${totalLoaded} ${getTranslation('questions')}`;
+            
+            // Добавляем информацию по законам
+            let lawsWithQuestions = [];
+            for (let law = 1; law <= 4; law++) { // Только для активных законов
+                if (state.questionsByLaw[law].length > 0) {
+                    lawsWithQuestions.push(`${lawNames[state.language][law]}: ${state.questionsByLaw[law].length}`);
+                }
             }
             
-            successMessage.innerHTML = `<p><i class="fas fa-check-circle"></i> ${getTranslation('loaded')} ${totalByLaw} ${getTranslation('questions')}</p>`;
+            if (lawsWithQuestions.length > 0) {
+                messageText += `<br><small>${lawsWithQuestions.join(', ')}</small>`;
+            }
+            
+            messageText += '</p>';
+            successMessage.innerHTML = messageText;
+            
             lawSelection.appendChild(successMessage);
             
-            // Через 3 секунды убираем сообщение
+            // Через 5 секунд убираем сообщение
             setTimeout(() => {
                 if (successMessage.parentNode) {
                     successMessage.remove();
                 }
-            }, 3000);
+            }, 5000);
             
         } catch (error) {
-            console.error('Ошибка загрузки:', error);
+            console.error('Ошибка загрузки вопросов:', error);
             
             // Убираем индикатор загрузки
             loadingIndicator.remove();
@@ -305,40 +349,50 @@ document.addEventListener('DOMContentLoaded', function() {
             errorMessage.innerHTML = `
                 <p><i class="fas fa-exclamation-triangle"></i> ${getTranslation('error_loading')}</p>
                 <p>${error.message}</p>
-                <p>Создайте файл questions_${state.language}.json с вопросами</p>
-                <p>Пример структуры файла смотрите в инструкции</p>
+                <p>Убедитесь, что файл questions_${state.language}.json находится в той же папке</p>
+                <p>и имеет правильный формат JSON</p>
             `;
             lawSelection.appendChild(errorMessage);
             
             // Создаем демо-вопросы для тестирования
+            console.log('Создание демо-вопросов');
             createDemoQuestions();
         } finally {
             state.isLoading = false;
+            console.log('Загрузка вопросов завершена');
         }
     }
     
     // Создание демо-вопросов для тестирования
     function createDemoQuestions() {
         const demoQuestions = [];
+        console.log('Создание демо-вопросов для законов 1-4');
         
         // Создаем демо-вопросы для законов 1-4
         for (let law = 1; law <= 4; law++) {
-            for (let i = 1; i <= 20; i++) {
+            for (let i = 1; i <= 5; i++) { // Создаем по 5 демо-вопросов на каждый закон
                 demoQuestions.push({
                     law: law,
-                    question: `[${state.language === 'ru' ? 'Демо' : 'Демо'}] Вопрос ${i} для ${lawNames[state.language][law]}`,
+                    question: `[Демо] ${lawNames[state.language][law]}. Вопрос ${i}: Основные положения?`,
                     correctAnswer: `Правильный ответ ${i}`,
                     incorrectAnswers: [
-                        `Неправильный ответ ${i}.1`,
-                        `Неправильный ответ ${i}.2`,
-                        `Неправильный ответ ${i}.3`
+                        `Неправильный вариант ${i}.1`,
+                        `Неправильный вариант ${i}.2`,
+                        `Неправильный вариант ${i}.3`
                     ]
                 });
             }
         }
         
         state.questionsByLaw = groupQuestionsByLaw(demoQuestions);
-        state.totalQuestionsLoaded = demoQuestions.length;
+        
+        let totalLoaded = 0;
+        for (let law = 1; law <= 7; law++) {
+            totalLoaded += state.questionsByLaw[law].length;
+        }
+        state.totalQuestionsLoaded = totalLoaded;
+        
+        console.log('Демо-вопросы созданы:', state.totalQuestionsLoaded);
     }
     
     // Группировка вопросов по законам
@@ -346,12 +400,73 @@ document.addEventListener('DOMContentLoaded', function() {
         const grouped = { 1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: [] };
         
         if (Array.isArray(questions)) {
-            questions.forEach(question => {
-                const law = parseInt(question.law);
-                if (law >= 1 && law <= 7 && question.question && question.correctAnswer && question.incorrectAnswers) {
-                    grouped[law].push(question);
+            console.log(`Обработка массива из ${questions.length} вопросов`);
+            
+            questions.forEach((question, index) => {
+                try {
+                    // Проверяем наличие необходимых полей
+                    if (!question || typeof question !== 'object') {
+                        console.warn(`Вопрос ${index} пропущен: не является объектом`, question);
+                        return;
+                    }
+                    
+                    // Проверяем наличие обязательных полей
+                    if (!question.question || typeof question.question !== 'string') {
+                        console.warn(`Вопрос ${index} пропущен: отсутствует или некорректен текст вопроса`, question);
+                        return;
+                    }
+                    
+                    if (!question.correctAnswer || typeof question.correctAnswer !== 'string') {
+                        console.warn(`Вопрос ${index} пропущен: отсутствует или некорректен правильный ответ`, question);
+                        return;
+                    }
+                    
+                    if (!question.incorrectAnswers || !Array.isArray(question.incorrectAnswers)) {
+                        console.warn(`Вопрос ${index} пропущен: отсутствует или некорректен массив неправильных ответов`, question);
+                        return;
+                    }
+                    
+                    // Преобразуем номер закона
+                    let law;
+                    if (typeof question.law === 'string') {
+                        law = parseInt(question.law, 10);
+                    } else if (typeof question.law === 'number') {
+                        law = question.law;
+                    } else {
+                        console.warn(`Вопрос ${index} пропущен: некорректный тип номера закона`, question.law);
+                        return;
+                    }
+                    
+                    // Проверяем, что номер закона от 1 до 7
+                    if (isNaN(law) || law < 1 || law > 7) {
+                        console.warn(`Вопрос ${index} пропущен: номер закона вне диапазона 1-7`, law);
+                        return;
+                    }
+                    
+                    // Проверяем, что в массиве неправильных ответов есть хотя бы 1 элемент
+                    if (question.incorrectAnswers.length < 1) {
+                        console.warn(`Вопрос ${index} пропущен: недостаточно неправильных ответов`, question.incorrectAnswers);
+                        return;
+                    }
+                    
+                    // Очищаем текст от лишних пробелов
+                    const cleanedQuestion = {
+                        law: law,
+                        question: question.question.trim(),
+                        correctAnswer: question.correctAnswer.trim(),
+                        incorrectAnswers: question.incorrectAnswers.map(answer => 
+                            typeof answer === 'string' ? answer.trim() : String(answer)
+                        )
+                    };
+                    
+                    grouped[law].push(cleanedQuestion);
+                    
+                } catch (error) {
+                    console.error(`Ошибка при обработке вопроса ${index}:`, error, question);
                 }
             });
+        } else {
+            console.error('questions не является массивом:', typeof questions);
         }
         
         return grouped;
@@ -359,30 +474,42 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Начало теста
     function startTest(lawNumber) {
+        console.log(`Запуск теста для закона ${lawNumber} (${lawNames[state.language][lawNumber]})`);
+        
         const allLawQuestions = state.questionsByLaw[lawNumber] || [];
+        console.log(`Найдено вопросов для закона ${lawNumber}: ${allLawQuestions.length}`);
         
         if (allLawQuestions.length === 0) {
+            console.error(`Нет вопросов для закона ${lawNumber}`);
             alert(`${getTranslation('no_questions')} ${getTranslation('choose_another_law')}`);
             return;
         }
         
         // Определяем количество вопросов для теста
         const questionsToTake = Math.min(QUESTIONS_PER_TEST, allLawQuestions.length);
+        console.log(`Будет выбрано ${questionsToTake} вопросов из ${allLawQuestions.length} доступных`);
         
         if (allLawQuestions.length < QUESTIONS_PER_TEST) {
-            alert(`${lawNames[state.language][lawNumber]} ${getTranslation('available')} ${allLawQuestions.length} ${getTranslation('questions')}. ${getTranslation('test_will_contain')}`);
+            const message = `${lawNames[state.language][lawNumber]}: ${getTranslation('available')} ${allLawQuestions.length} ${getTranslation('questions')}. ${getTranslation('test_will_contain')}`;
+            console.log(message);
+            alert(message);
         }
         
         // Выбираем случайные вопросы без повторений
         state.currentQuestions = getRandomQuestions(allLawQuestions, questionsToTake);
+        console.log(`Выбрано ${state.currentQuestions.length} случайных вопросов`);
         
         // Перемешиваем варианты ответов в каждом вопросе
         state.currentQuestions.forEach(question => {
             if (question.correctAnswer && question.incorrectAnswers) {
-                question.allAnswers = shuffleArray([
-                    question.correctAnswer,
-                    ...question.incorrectAnswers
-                ]);
+                // Собираем все ответы
+                const allAnswers = [question.correctAnswer, ...question.incorrectAnswers];
+                
+                // Перемешиваем ответы
+                question.allAnswers = shuffleArray(allAnswers);
+                
+                console.log(`Вопрос: ${question.question.substring(0, 50)}...`);
+                console.log(`Варианты ответов: ${question.allAnswers.length}`);
             }
         });
         
@@ -415,16 +542,21 @@ document.addEventListener('DOMContentLoaded', function() {
     // Выбор случайных вопросов без повторений
     function getRandomQuestions(allQuestions, count) {
         if (allQuestions.length <= count) {
+            console.log(`Используем все ${allQuestions.length} доступных вопросов`);
             return [...allQuestions];
         }
         
+        console.log(`Выбираем ${count} случайных вопросов из ${allQuestions.length}`);
         const shuffled = [...allQuestions].sort(() => Math.random() - 0.5);
         return shuffled.slice(0, count);
     }
     
     // Загрузка текущего вопроса
     function loadQuestion() {
+        console.log(`Загрузка вопроса ${state.currentQuestionIndex + 1} из ${state.currentQuestions.length}`);
+        
         if (state.currentQuestionIndex >= state.currentQuestions.length) {
+            console.log('Все вопросы пройдены, показываем результаты');
             showResults();
             return;
         }
@@ -462,6 +594,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     `;
                     
                     optionBtn.addEventListener('click', () => {
+                        console.log(`Выбран ответ: ${answer.substring(0, 30)}...`);
                         selectAnswer(answer, question.correctAnswer);
                     });
                     
@@ -492,8 +625,10 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (answerText === correctAnswer) {
                 btn.classList.add('correct');
+                console.log('Ответ помечен как правильный');
             } else if (answerText === selectedAnswer && selectedAnswer !== correctAnswer) {
                 btn.classList.add('incorrect');
+                console.log('Ответ помечен как неправильный');
             }
         });
         
@@ -509,6 +644,8 @@ document.addEventListener('DOMContentLoaded', function() {
             correctAnswer: correctAnswer,
             isCorrect: selectedAnswer === correctAnswer
         };
+        
+        console.log(`Результат вопроса: ${selectedAnswer === correctAnswer ? 'Правильно' : 'Неправильно'}`);
     }
     
     // Переход к следующему вопросу
@@ -524,10 +661,14 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Показ результатов
     function showResults() {
+        console.log('Показ результатов теста');
+        
         // Подсчет результатов
         const correctAnswers = state.testResults.filter(r => r.isCorrect).length;
         const totalQuestions = state.testResults.length;
         const score = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
+        
+        console.log(`Результаты: ${correctAnswers} правильных из ${totalQuestions} (${score}%)`);
         
         // Обновление статистики
         if (scorePercentage) scorePercentage.textContent = `${score}%`;
@@ -575,6 +716,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Переключение языка
     function switchLanguage(lang) {
+        console.log(`Переключение языка на ${lang}`);
         state.language = lang;
         localStorage.setItem('test_language', lang);
         
@@ -636,6 +778,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         screen.classList.add('active');
+        console.log(`Активный экран: ${screen.id}`);
     }
     
     // Запуск приложения
