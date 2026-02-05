@@ -1,6 +1,8 @@
 import json
 import re
 
+law = int(input("Число закона: "))
+
 # читаем файл построчно и убираем пустые строки
 with open("questions.txt", "r", encoding="utf-8") as f:
     lines = [line.strip() for line in f if line.strip()]
@@ -19,6 +21,7 @@ for line in lines:
 
         # создаём новый объект вопроса
         current = {
+            "law": law,
             "question": line,
             "correctAnswer": None,
             "incorrectAnswer": []
