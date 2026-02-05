@@ -205,7 +205,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         try {
             // Пытаемся загрузить вопросы для текущего языка
-            const filename = `questions_${state.language}.json`;
+            const filename = `questions${state.language}.json`;
             const response = await fetch(filename);
             
             if (!response.ok) {
