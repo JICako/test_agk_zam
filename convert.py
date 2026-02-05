@@ -34,7 +34,7 @@ for line in lines:
         if re.match(r"^A[\)\.]", line):
             current["correctAnswer"] = line
         else:
-            current["incorrectAnswer"].append(line)
+            current["incorrectAnswers"].append(line)
 
 # не забываем последний вопрос
 if current:
