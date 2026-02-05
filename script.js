@@ -2,6 +2,28 @@ document.addEventListener('DOMContentLoaded', function() {
     // Конфигурация
     const QUESTIONS_PER_TEST = 10; // Можно изменить на 50
     
+    // Названия законов для отображения
+    const lawNames = {
+        'ru': {
+            1: 'Трудовой кодекс',
+            2: 'О браке и семье', 
+            3: 'Об образовании',
+            4: 'О статусе педагога',
+            5: 'Административный кодекс',
+            6: 'Гражданский кодекс',
+            7: 'Уголовный кодекс'
+        },
+        'kz': {
+            1: 'Еңбек кодексі',
+            2: 'Неке және отбасы туралы',
+            3: 'Білім туралы',
+            4: 'Педагогтың мәртебесі туралы',
+            5: 'Әкімшілік кодекс',
+            6: 'Азаматтық кодекс',
+            7: 'Кылмыстық кодекс'
+        }
+    };
+    
     // Элементы DOM
     const screens = {
         selection: document.getElementById('test-selection-screen'),
@@ -39,7 +61,7 @@ document.addEventListener('DOMContentLoaded', function() {
         userAnswers: [],
         testResults: [],
         selectedLaw: 1,
-        questionsByLaw: { 1: [], 2: [], 3: [], 4: [], 5: [] },
+        questionsByLaw: { 1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: [] },
         isLoading: false,
         language: localStorage.getItem('test_language') || 'ru',
         totalQuestionsLoaded: 0
@@ -49,24 +71,29 @@ document.addEventListener('DOMContentLoaded', function() {
     const translations = {
         'ru': {
             'title': 'Тестирование по законам',
-            'subtitle': 'Проверьте свои знания основных законов',
-            'choose_law': 'Выберите закон для тестирования',
-            'law1_title': 'Первый закон',
-            'law1_desc': 'Основные положения и принципы',
-            'law2_title': 'Второй закон',
-            'law2_desc': 'Права и обязанности',
-            'law3_title': 'Третий закон',
-            'law3_desc': 'Процессуальные нормы',
-            'law4_title': 'Четвертый закон',
-            'law4_desc': 'Административные положения',
-            'law5_title': 'Пятый закон',
-            'law5_desc': 'Заключительные положения',
+            'subtitle': 'Проверьте свои знания основных законодательных актов',
+            'choose_law': 'Выберите тест для прохождения',
+            'law1_title': 'Трудовой кодекс',
+            'law1_desc': 'Трудовые отношения и права работников',
+            'law2_title': 'О браке и семье',
+            'law2_desc': 'Семейные правоотношения',
+            'law3_title': 'Об образовании',
+            'law3_desc': 'Система образования и обучение',
+            'law4_title': 'О статусе педагога',
+            'law4_desc': 'Права и обязанности педагогов',
+            'law5_title': 'Административный кодекс',
+            'law5_desc': 'Административные правонарушения',
+            'law6_title': 'Гражданский кодекс',
+            'law6_desc': 'Гражданские правоотношения',
+            'law7_title': 'Уголовный кодекс',
+            'law7_desc': 'Преступления и наказания',
             'instructions': 'Инструкция',
-            'instruction1': 'Выберите один из пяти законов для тестирования',
+            'instruction1': 'Выберите один из доступных тестов для прохождения',
             'instruction2': 'Каждый тест содержит случайные вопросы без повторений',
             'instruction3': 'В каждом вопросе нужно выбрать один правильный ответ',
             'instruction4': 'После ответа вы увидите правильный вариант',
             'instruction5': 'В конце теста вы получите детальный результат',
+            'instruction6': 'Тесты 5-7 находятся в разработке и будут доступны в ближайшее время',
             'question': 'Вопрос',
             'of': 'из',
             'law': 'Закон',
@@ -79,39 +106,47 @@ document.addEventListener('DOMContentLoaded', function() {
             'total_questions': 'Всего вопросов',
             'results_details': 'Детализация ответов',
             'restart_test': 'Пройти тест заново',
-            'choose_another': 'Выбрать другой закон',
-            'copyright': '© 2023 Тестирование по законам',
+            'choose_another': 'Выбрать другой тест',
+            'copyright': '© 2023 Тестирование по законодательным актам',
             'your_answer': 'Ваш ответ:',
             'correct_answer': 'Правильный ответ:',
             'loading': 'Загрузка вопросов...',
             'loaded': 'Загружено',
             'questions': 'вопросов',
             'error_loading': 'Ошибка загрузки вопросов',
-            'no_questions': 'Для этого закона нет вопросов',
-            'choose_another_law': 'Пожалуйста, выберите другой закон.',
+            'no_questions': 'Для этого теста нет вопросов',
+            'choose_another_law': 'Пожалуйста, выберите другой тест.',
+            'active': 'Активный',
+            'in_development': 'В разработке',
             'available': 'доступно',
-            'test_will_contain': 'Тест будет содержать все доступные вопросы.'
+            'test_will_contain': 'Тест будет содержать все доступные вопросы.',
+            'test_in_development': 'Этот тест находится в разработке и будет доступен в ближайшее время.'
         },
         'kz': {
             'title': 'Заңдар бойынша тестілеу',
-            'subtitle': 'Негізгі заңдар бойынша біліміңізді тексеріңіз',
-            'choose_law': 'Тестілеу үшін заңды таңдаңыз',
-            'law1_title': 'Бірінші заң',
-            'law1_desc': 'Негізгі ережелер мен қағидаттар',
-            'law2_title': 'Екінші заң',
-            'law2_desc': 'Құқықтар мен міндеттер',
-            'law3_title': 'Үшінші заң',
-            'law3_desc': 'Процессуалдық ережелер',
-            'law4_title': 'Төртінші заң',
-            'law4_desc': 'Әкімшілік ережелер',
-            'law5_title': 'Бесінші заң',
-            'law5_desc': 'Қорытынды ережелер',
+            'subtitle': 'Негізгі заңдық актілер бойынша біліміңізді тексеріңіз',
+            'choose_law': 'Өту үшін сынақты таңдаңыз',
+            'law1_title': 'Еңбек кодексі',
+            'law1_desc': 'Еңбек қатынастары және жұмысшылардың құқықтары',
+            'law2_title': 'Неке және отбасы туралы',
+            'law2_desc': 'Отбасылық құқықтық қатынастар',
+            'law3_title': 'Білім туралы',
+            'law3_desc': 'Білім беру жүйесі және оқыту',
+            'law4_title': 'Педагогтың мәртебесі туралы',
+            'law4_desc': 'Педагогтардың құқықтары мен міндеттері',
+            'law5_title': 'Әкімшілік кодекс',
+            'law5_desc': 'Әкімшілік құқық бұзушылықтар',
+            'law6_title': 'Азаматтық кодекс',
+            'law6_desc': 'Азаматтық құқықтық қатынастар',
+            'law7_title': 'Кылмыстық кодекс',
+            'law7_desc': 'Қылмыстар және жазалар',
             'instructions': 'Нұсқаулық',
-            'instruction1': 'Тестілеу үшін бес заңның бірін таңдаңыз',
-            'instruction2': 'Әрбір тестте қайталанбайтын кездейсоқ сұрақтар бар',
+            'instruction1': 'Өту үшін қолжетімді сынақтардың бірін таңдаңыз',
+            'instruction2': 'Әрбір сынақта қайталанбайтын кездейсоқ сұрақтар бар',
             'instruction3': 'Әрбір сұрақта бір дұрыс жауапты таңдау керек',
             'instruction4': 'Жауап бергеннен кейін дұрыс нұсқаны көресіз',
-            'instruction5': 'Тест аяқталғаннан кейін толық нәтиже аласыз',
+            'instruction5': 'Сынақ аяқталғаннан кейін толық нәтиже аласыз',
+            'instruction6': '5-7 сынақтар әзірленуде және жақын арада қолжетімді болады',
             'question': 'Сұрақ',
             'of': '-дан',
             'law': 'Заң',
@@ -123,19 +158,22 @@ document.addEventListener('DOMContentLoaded', function() {
             'incorrect_count': 'Қате жауаптар',
             'total_questions': 'Барлық сұрақтар',
             'results_details': 'Жауаптардың егжей-тегжейі',
-            'restart_test': 'Тестті қайта өту',
-            'choose_another': 'Басқа заңды таңдау',
-            'copyright': '© 2023 Заңдар бойынша тестілеу',
+            'restart_test': 'Сынақты қайта өту',
+            'choose_another': 'Басқа сынақты таңдау',
+            'copyright': '© 2023 Заңдық актілер бойынша тестілеу',
             'your_answer': 'Сіздің жауабыңыз:',
             'correct_answer': 'Дұрыс жауап:',
             'loading': 'Сұрақтар жүктелуде...',
             'loaded': 'Жүктелді',
             'questions': 'сұрақ',
             'error_loading': 'Сұрақтарды жүктеу кезінде қате пайда болды',
-            'no_questions': 'Бұл заң үшін сұрақтар жоқ',
-            'choose_another_law': 'Басқа заңды таңдаңыз.',
+            'no_questions': 'Бұл сынақ үшін сұрақтар жоқ',
+            'choose_another_law': 'Басқа сынақты таңдаңыз.',
+            'active': 'Белсенді',
+            'in_development': 'Әзірленуде',
             'available': 'қолжетімді',
-            'test_will_contain': 'Тест барлық қолжетімді сұрақтарды қамтиды.'
+            'test_will_contain': 'Тест барлық қолжетімді сұрақтарды қамтиды.',
+            'test_in_development': 'Бұл сынақ әзірленуде және жақын арада қолжетімді болады.'
         }
     };
     
@@ -153,6 +191,17 @@ document.addEventListener('DOMContentLoaded', function() {
         // Карточки законов
         lawCards.forEach(card => {
             card.addEventListener('click', () => {
+                const lawNumber = parseInt(card.getAttribute('data-law'));
+                const isActive = card.classList.contains('active');
+                const isInactive = card.classList.contains('inactive');
+                
+                if (isInactive) {
+                    alert(getTranslation('test_in_development'));
+                    return;
+                }
+                
+                if (!isActive) return;
+                
                 if (state.isLoading) {
                     alert(getTranslation('loading'));
                     return;
@@ -163,7 +212,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
                 
-                state.selectedLaw = parseInt(card.getAttribute('data-law'));
+                state.selectedLaw = lawNumber;
                 startTest(state.selectedLaw);
             });
         });
@@ -205,7 +254,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         try {
             // Пытаемся загрузить вопросы для текущего языка
-            const filename = `questions${state.language}.json`;
+            const filename = `questions_${state.language}.json`;
             const response = await fetch(filename);
             
             if (!response.ok) {
@@ -230,7 +279,7 @@ document.addEventListener('DOMContentLoaded', function() {
             successMessage.className = 'success-message';
             
             let totalByLaw = 0;
-            for (let law in state.questionsByLaw) {
+            for (let law = 1; law <= 7; law++) {
                 totalByLaw += state.questionsByLaw[law].length;
             }
             
@@ -272,11 +321,12 @@ document.addEventListener('DOMContentLoaded', function() {
     function createDemoQuestions() {
         const demoQuestions = [];
         
-        for (let law = 1; law <= 5; law++) {
+        // Создаем демо-вопросы для законов 1-4
+        for (let law = 1; law <= 4; law++) {
             for (let i = 1; i <= 20; i++) {
                 demoQuestions.push({
                     law: law,
-                    question: `[${state.language === 'ru' ? 'Демо' : 'Демо'}] Вопрос ${i} для закона ${law}`,
+                    question: `[${state.language === 'ru' ? 'Демо' : 'Демо'}] Вопрос ${i} для ${lawNames[state.language][law]}`,
                     correctAnswer: `Правильный ответ ${i}`,
                     incorrectAnswers: [
                         `Неправильный ответ ${i}.1`,
@@ -293,12 +343,12 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Группировка вопросов по законам
     function groupQuestionsByLaw(questions) {
-        const grouped = { 1: [], 2: [], 3: [], 4: [], 5: [] };
+        const grouped = { 1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: [] };
         
         if (Array.isArray(questions)) {
             questions.forEach(question => {
                 const law = parseInt(question.law);
-                if (law >= 1 && law <= 5 && question.question && question.correctAnswer && question.incorrectAnswers) {
+                if (law >= 1 && law <= 7 && question.question && question.correctAnswer && question.incorrectAnswers) {
                     grouped[law].push(question);
                 }
             });
@@ -320,7 +370,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const questionsToTake = Math.min(QUESTIONS_PER_TEST, allLawQuestions.length);
         
         if (allLawQuestions.length < QUESTIONS_PER_TEST) {
-            alert(`${getTranslation('law')} ${lawNumber} ${getTranslation('available')} ${allLawQuestions.length} ${getTranslation('questions')}. ${getTranslation('test_will_contain')}`);
+            alert(`${lawNames[state.language][lawNumber]} ${getTranslation('available')} ${allLawQuestions.length} ${getTranslation('questions')}. ${getTranslation('test_will_contain')}`);
         }
         
         // Выбираем случайные вопросы без повторений
@@ -344,11 +394,11 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Обновляем интерфейс
         if (currentLawElement) {
-            currentLawElement.innerHTML = `${getTranslation('law')} ${lawNumber}`;
+            currentLawElement.textContent = lawNames[state.language][lawNumber];
         }
         
         if (resultsLawName) {
-            resultsLawName.innerHTML = `${getTranslation('law')} ${lawNumber}`;
+            resultsLawName.textContent = lawNames[state.language][lawNumber];
         }
         
         if (totalQuestionsElement) {

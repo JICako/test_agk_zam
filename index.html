@@ -25,36 +25,70 @@
         <div id="test-selection-screen" class="screen active">
             <div class="header">
                 <h1><i class="fas fa-graduation-cap"></i> <span data-lang="title">Тестирование по законам</span></h1>
-                <p class="subtitle" data-lang="subtitle">Проверьте свои знания основных законов</p>
+                <p class="subtitle" data-lang="subtitle">Проверьте свои знания основных законодательных актов</p>
             </div>
             
             <div class="law-selection">
-                <h2><i class="fas fa-book-open"></i> <span data-lang="choose_law">Выберите закон для тестирования</span></h2>
+                <h2><i class="fas fa-book-open"></i> <span data-lang="choose_law">Выберите тест для прохождения</span></h2>
                 <div class="law-cards">
-                    <div class="law-card" data-law="1">
+                    <!-- Активные тесты -->
+                    <div class="law-card active" data-law="1">
                         <div class="law-number">1</div>
-                        <h3 data-lang="law1_title">Первый закон</h3>
-                        <p data-lang="law1_desc">Основные положения и принципы</p>
+                        <h3 data-lang="law1_title">Трудовой кодекс</h3>
+                        <p data-lang="law1_desc">Трудовые отношения и права работников</p>
+                        <div class="law-status active-status">
+                            <i class="fas fa-check-circle"></i> <span data-lang="active">Активный</span>
+                        </div>
                     </div>
-                    <div class="law-card" data-law="2">
+                    <div class="law-card active" data-law="2">
                         <div class="law-number">2</div>
-                        <h3 data-lang="law2_title">Второй закон</h3>
-                        <p data-lang="law2_desc">Права и обязанности</p>
+                        <h3 data-lang="law2_title">О браке и семье</h3>
+                        <p data-lang="law2_desc">Семейные правоотношения</p>
+                        <div class="law-status active-status">
+                            <i class="fas fa-check-circle"></i> <span data-lang="active">Активный</span>
+                        </div>
                     </div>
-                    <div class="law-card" data-law="3">
+                    <div class="law-card active" data-law="3">
                         <div class="law-number">3</div>
-                        <h3 data-lang="law3_title">Третий закон</h3>
-                        <p data-lang="law3_desc">Процессуальные нормы</p>
+                        <h3 data-lang="law3_title">Об образовании</h3>
+                        <p data-lang="law3_desc">Система образования и обучение</p>
+                        <div class="law-status active-status">
+                            <i class="fas fa-check-circle"></i> <span data-lang="active">Активный</span>
+                        </div>
                     </div>
-                    <div class="law-card" data-law="4">
+                    <div class="law-card active" data-law="4">
                         <div class="law-number">4</div>
-                        <h3 data-lang="law4_title">Четвертый закон</h3>
-                        <p data-lang="law4_desc">Административные положения</p>
+                        <h3 data-lang="law4_title">О статусе педагога</h3>
+                        <p data-lang="law4_desc">Права и обязанности педагогов</p>
+                        <div class="law-status active-status">
+                            <i class="fas fa-check-circle"></i> <span data-lang="active">Активный</span>
+                        </div>
                     </div>
-                    <div class="law-card" data-law="5">
+                    
+                    <!-- Тесты в разработке -->
+                    <div class="law-card inactive" data-law="5">
                         <div class="law-number">5</div>
-                        <h3 data-lang="law5_title">Пятый закон</h3>
-                        <p data-lang="law5_desc">Заключительные положения</p>
+                        <h3 data-lang="law5_title">Административный кодекс</h3>
+                        <p data-lang="law5_desc">Административные правонарушения</p>
+                        <div class="law-status inactive-status">
+                            <i class="fas fa-tools"></i> <span data-lang="in_development">В разработке</span>
+                        </div>
+                    </div>
+                    <div class="law-card inactive" data-law="6">
+                        <div class="law-number">6</div>
+                        <h3 data-lang="law6_title">Гражданский кодекс</h3>
+                        <p data-lang="law6_desc">Гражданские правоотношения</p>
+                        <div class="law-status inactive-status">
+                            <i class="fas fa-tools"></i> <span data-lang="in_development">В разработке</span>
+                        </div>
+                    </div>
+                    <div class="law-card inactive" data-law="7">
+                        <div class="law-number">7</div>
+                        <h3 data-lang="law7_title">Уголовный кодекс</h3>
+                        <p data-lang="law7_desc">Преступления и наказания</p>
+                        <div class="law-status inactive-status">
+                            <i class="fas fa-tools"></i> <span data-lang="in_development">В разработке</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -62,11 +96,12 @@
             <div class="instructions">
                 <h3><i class="fas fa-info-circle"></i> <span data-lang="instructions">Инструкция</span></h3>
                 <ul>
-                    <li data-lang="instruction1">Выберите один из пяти законов для тестирования</li>
+                    <li data-lang="instruction1">Выберите один из доступных тестов для прохождения</li>
                     <li data-lang="instruction2">Каждый тест содержит случайные вопросы без повторений</li>
                     <li data-lang="instruction3">В каждом вопросе нужно выбрать один правильный ответ</li>
                     <li data-lang="instruction4">После ответа вы увидите правильный вариант</li>
                     <li data-lang="instruction5">В конце теста вы получите детальный результат</li>
+                    <li class="development-note" data-lang="instruction6">Тесты 5-7 находятся в разработке и будут доступны в ближайшее время</li>
                 </ul>
             </div>
         </div>
@@ -88,7 +123,7 @@
                 
                 <div class="law-indicator">
                     <i class="fas fa-scale-balanced"></i>
-                    <span id="current-law"><span data-lang="law">Закон</span> 1</span>
+                    <span id="current-law">Трудовой кодекс</span>
                 </div>
                 
                 <button id="back-to-selection" class="btn-secondary">
@@ -117,7 +152,7 @@
                 <h1><i class="fas fa-chart-line"></i> <span data-lang="results">Результаты тестирования</span></h1>
                 <div class="law-indicator results-law">
                     <i class="fas fa-scale-balanced"></i>
-                    <span id="results-law-name"><span data-lang="law">Закон</span> 1</span>
+                    <span id="results-law-name">Трудовой кодекс</span>
                 </div>
             </div>
             
@@ -155,13 +190,13 @@
                     <i class="fas fa-redo"></i> <span data-lang="restart_test">Пройти тест заново</span>
                 </button>
                 <button id="new-test-btn" class="btn-secondary">
-                    <i class="fas fa-book"></i> <span data-lang="choose_another">Выбрать другой закон</span>
+                    <i class="fas fa-book"></i> <span data-lang="choose_another">Выбрать другой тест</span>
                 </button>
             </div>
         </div>
         
         <div class="footer">
-            <p data-lang="copyright">© 2023 Тестирование по законам</p>
+            <p data-lang="copyright">© 2023 Тестирование по законодательным актам</p>
         </div>
     </div>
     
