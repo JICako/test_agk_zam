@@ -24,7 +24,7 @@ for line in lines:
             "law": law,
             "question": line,
             "correctAnswer": None,
-            "incorrectAnswer": []
+            "incorrectAnswers": []
         }
 
     # если строка — вариант ответа (A) или A.)
