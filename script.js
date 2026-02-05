@@ -4,24 +4,13 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Названия законов
     const lawNames = {
-        'ru': {
-            1: 'Трудовой кодекс',
-            2: 'О браке и семье', 
-            3: 'Об образовании',
-            4: 'О статусе педагога',
-            5: 'Административный кодекс',
-            6: 'Гражданский кодекс',
-            7: 'Уголовный кодекс'
-        },
-        'kz': {
-            1: 'Еңбек кодексі',
-            2: 'Неке және отбасы туралы',
-            3: 'Білім туралы',
-            4: 'Педагогтың мәртебесі туралы',
-            5: 'Әкімшілік кодекс',
-            6: 'Азаматтық кодекс',
-            7: 'Кылмыстық кодекс'
-        }
+        1: 'Трудовой кодекс',
+        2: 'О браке и семье', 
+        3: 'Об образовании',
+        4: 'О статусе педагога',
+        5: 'Административный кодекс',
+        6: 'Гражданский кодекс',
+        7: 'Уголовный кодекс'
     };
     
     // Элементы DOM
@@ -35,9 +24,7 @@ document.addEventListener('DOMContentLoaded', function() {
         back: document.getElementById('back-to-selection'),
         next: document.getElementById('next-question-btn'),
         restart: document.getElementById('restart-test-btn'),
-        newTest: document.getElementById('new-test-btn'),
-        langRu: document.getElementById('lang-ru'),
-        langKz: document.getElementById('lang-kz')
+        newTest: document.getElementById('new-test-btn')
     };
     
     const questionText = document.getElementById('question-text');
@@ -63,179 +50,28 @@ document.addEventListener('DOMContentLoaded', function() {
         selectedLaw: 1,
         questionsByLaw: { 1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: [] },
         isLoading: false,
-        language: localStorage.getItem('test_language') || 'ru',
         totalQuestionsLoaded: 0
-    };
-    
-    // Словари переводов
-    const translations = {
-        'ru': {
-            'title': 'Тестирование по законам',
-            'subtitle': 'Проверьте свои знания основных законодательных актов',
-            'choose_law': 'Выберите тест для прохождения',
-            'law1_title': 'Трудовой кодекс',
-            'law1_desc': 'Трудовые отношения и права работников',
-            'law2_title': 'О браке и семье',
-            'law2_desc': 'Семейные правоотношения',
-            'law3_title': 'Об образовании',
-            'law3_desc': 'Система образования и обучение',
-            'law4_title': 'О статусе педагога',
-            'law4_desc': 'Права и обязанности педагогов',
-            'law5_title': 'Административный кодекс',
-            'law5_desc': 'Административные правонарушения',
-            'law6_title': 'Гражданский кодекс',
-            'law6_desc': 'Гражданские правоотношения',
-            'law7_title': 'Уголовный кодекс',
-            'law7_desc': 'Преступления и наказания',
-            'instructions': 'Инструкция',
-            'instruction1': 'Выберите один из семи тестов для прохождения',
-            'instruction2': 'Каждый тест содержит случайные вопросы без повторений',
-            'instruction3': 'В каждом вопросе нужно выбрать один правильный ответ',
-            'instruction4': 'После ответа вы увидите правильный вариант',
-            'instruction5': 'В конце теста вы получите детальный результат',
-            'question': 'Вопрос',
-            'of': 'из',
-            'law': 'Закон',
-            'back': 'Назад',
-            'next_question': 'Следующий вопрос',
-            'results': 'Результаты тестирования',
-            'correct_answers': 'правильных ответов',
-            'correct_count': 'Правильных ответов',
-            'incorrect_count': 'Неправильных ответов',
-            'total_questions': 'Всего вопросов',
-            'results_details': 'Детализация ответов',
-            'restart_test': 'Пройти тест заново',
-            'choose_another': 'Выбрать другой тест',
-            'copyright': '© 2023 Тестирование по законодательным актам',
-            'your_answer': 'Ваш ответ:',
-            'correct_answer': 'Правильный ответ:',
-            'loading': 'Загрузка вопросов...',
-            'loaded': 'Загружено',
-            'questions': 'вопросов',
-            'error_loading': 'Ошибка загрузки вопросов',
-            'no_questions': 'Для этого теста нет вопросов',
-            'choose_another_law': 'Пожалуйста, выберите другой тест.',
-            'available': 'доступно',
-            'test_will_contain': 'Тест будет содержать все доступные вопросы.',
-            'active': 'Активный'
-        },
-        'kz': {
-            'title': 'Заңдар бойынша тестілеу',
-            'subtitle': 'Негізгі заңдық актілер бойынша біліміңізді тексеріңіз',
-            'choose_law': 'Өту үшін сынақты таңдаңыз',
-            'law1_title': 'Еңбек кодексі',
-            'law1_desc': 'Еңбек қатынастары және жұмысшылардың құқықтары',
-            'law2_title': 'Неке және отбасы туралы',
-            'law2_desc': 'Отбасылық құқықтық қатынастар',
-            'law3_title': 'Білім туралы',
-            'law3_desc': 'Білім беру жүйесі және оқыту',
-            'law4_title': 'Педагогтың мәртебесі туралы',
-            'law4_desc': 'Педагогтардың құқықтары мен міндеттері',
-            'law5_title': 'Әкімшілік кодекс',
-            'law5_desc': 'Әкімшілік құқық бұзушылықтар',
-            'law6_title': 'Азаматтық кодекс',
-            'law6_desc': 'Азаматтық құқықтық қатынастар',
-            'law7_title': 'Кылмыстық кодекс',
-            'law7_desc': 'Қылмыстар және жазалар',
-            'instructions': 'Нұсқаулық',
-            'instruction1': 'Өту үшін жеті сынақтың бірін таңдаңыз',
-            'instruction2': 'Әрбір сынақта қайталанбайтын кездейсоқ сұрақтар бар',
-            'instruction3': 'Әрбір сұрақта бір дұрыс жауапты таңдау керек',
-            'instruction4': 'Жауап бергеннен кейін дұрыс нұсқаны көресіз',
-            'instruction5': 'Сынақ аяқталғаннан кейін толық нәтиже аласыз',
-            'question': 'Сұрақ',
-            'of': '-дан',
-            'law': 'Заң',
-            'back': 'Артқа',
-            'next_question': 'Келесі сұрақ',
-            'results': 'Тестілеу нәтижелері',
-            'correct_answers': 'дұрыс жауап',
-            'correct_count': 'Дұрыс жауаптар',
-            'incorrect_count': 'Қате жауаптар',
-            'total_questions': 'Барлық сұрақтар',
-            'results_details': 'Жауаптардың егжей-тегжейі',
-            'restart_test': 'Сынақты қайта өту',
-            'choose_another': 'Басқа сынақты таңдау',
-            'copyright': '© 2023 Заңдық актілер бойынша тестілеу',
-            'your_answer': 'Сіздің жауабыңыз:',
-            'correct_answer': 'Дұрыс жауап:',
-            'loading': 'Сұрақтар жүктелуде...',
-            'loaded': 'Жүктелді',
-            'questions': 'сұрақ',
-            'error_loading': 'Сұрақтарды жүктеу кезінде қате пайда болды',
-            'no_questions': 'Бұл сынақ үшін сұрақтар жоқ',
-            'choose_another_law': 'Басқа сынақты таңдаңыз.',
-            'available': 'қолжетімді',
-            'test_will_contain': 'Тест барлық қолжетімді сұрақтарды қамтиды.',
-            'active': 'Белсенді'
-        }
     };
     
     // Инициализация
     function init() {
+        console.log('Инициализация приложения');
         setupEventListeners();
-        updateLanguageButtons();
-        updateInterfaceTexts();
         loadQuestions();
         showScreen(screens.selection);
-        
-        // Принудительная активация всех карточек
-        forceActivateAllCards();
-    }
-    
-    // Принудительная активация всех карточек
-    function forceActivateAllCards() {
-        lawCards.forEach(card => {
-            const lawNumber = parseInt(card.getAttribute('data-law'));
-            if (lawNumber >= 1 && lawNumber <= 7) {
-                // Убираем класс inactive если есть
-                card.classList.remove('inactive');
-                // Добавляем класс active если нет
-                if (!card.classList.contains('active')) {
-                    card.classList.add('active');
-                }
-                
-                // Принудительно меняем стили
-                card.style.opacity = '1';
-                card.style.cursor = 'pointer';
-                card.style.pointerEvents = 'auto';
-                card.style.background = '#f8f9fa';
-                
-                // Обновляем статус
-                const statusDiv = card.querySelector('.law-status');
-                if (statusDiv) {
-                    statusDiv.className = 'law-status active-status';
-                    statusDiv.innerHTML = `<i class="fas fa-check-circle"></i> ${getTranslation('active')}`;
-                }
-                
-                // Обновляем цвет номера
-                const numberDiv = card.querySelector('.law-number');
-                if (numberDiv) {
-                    numberDiv.style.background = '#3498db';
-                }
-                
-                // Обновляем цвет заголовка
-                const title = card.querySelector('h3');
-                if (title) {
-                    title.style.color = '#2c3e50';
-                }
-            }
-        });
     }
     
     // Настройка обработчиков
     function setupEventListeners() {
+        console.log('Настройка обработчиков событий');
+        
         lawCards.forEach(card => {
-            card.addEventListener('click', () => {
-                const lawNumber = parseInt(card.getAttribute('data-law'));
+            card.addEventListener('click', function() {
+                const lawNumber = parseInt(this.getAttribute('data-law'));
+                console.log('Клик по карточке закона:', lawNumber);
                 
                 if (state.isLoading) {
-                    alert(getTranslation('loading'));
-                    return;
-                }
-                
-                if (state.totalQuestionsLoaded === 0) {
-                    alert(getTranslation('error_loading'));
+                    alert('Загрузка вопросов...');
                     return;
                 }
                 
@@ -248,36 +84,17 @@ document.addEventListener('DOMContentLoaded', function() {
         if (buttons.next) buttons.next.addEventListener('click', goToNextQuestion);
         if (buttons.restart) buttons.restart.addEventListener('click', () => startTest(state.selectedLaw));
         if (buttons.newTest) buttons.newTest.addEventListener('click', () => showScreen(screens.selection));
-        
-        if (buttons.langRu) {
-            buttons.langRu.addEventListener('click', () => {
-                if (state.language !== 'ru') switchLanguage('ru');
-            });
-        }
-        
-        if (buttons.langKz) {
-            buttons.langKz.addEventListener('click', () => {
-                if (state.language !== 'kz') switchLanguage('kz');
-            });
-        }
     }
     
     // Загрузка вопросов
     async function loadQuestions() {
+        console.log('Загрузка вопросов');
         state.isLoading = true;
         
-        const loadingIndicator = document.createElement('div');
-        loadingIndicator.className = 'loading-indicator';
-        loadingIndicator.innerHTML = `<p><i class="fas fa-spinner fa-spin"></i> ${getTranslation('loading')}</p>`;
-        
-        const lawSelection = document.querySelector('.law-selection');
-        if (lawSelection.querySelector('.loading-indicator')) {
-            lawSelection.querySelector('.loading-indicator').remove();
-        }
-        lawSelection.appendChild(loadingIndicator);
-        
         try {
-            const filename = `questions_${state.language}.json`;
+            const filename = 'questions_ru.json';
+            console.log('Попытка загрузить файл:', filename);
+            
             const response = await fetch(filename);
             
             if (!response.ok) {
@@ -293,8 +110,8 @@ document.addEventListener('DOMContentLoaded', function() {
             // Группируем вопросы по законам
             state.questionsByLaw = groupQuestionsByLaw(questionsData);
             
-            // ДОБАВЛЯЕМ ДЕМО-ВОПРОСЫ для тестов 5-7 если их нет
-            for (let law = 5; law <= 7; law++) {
+            // Добавляем демо-вопросы для тестов без вопросов
+            for (let law = 1; law <= 7; law++) {
                 if (state.questionsByLaw[law].length === 0) {
                     addDemoQuestionsForLaw(law, 5);
                 }
@@ -307,58 +124,24 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             state.totalQuestionsLoaded = totalQuestions;
             
-            // Убираем индикатор
-            loadingIndicator.remove();
-            
-            // Сообщение об успешной загрузке
-            const successMessage = document.createElement('div');
-            successMessage.className = 'success-message';
-            
-            let lawsInfo = [];
-            for (let law = 1; law <= 7; law++) {
-                if (state.questionsByLaw[law].length > 0) {
-                    const isDemo = state.questionsByLaw[law][0] && state.questionsByLaw[law][0].question.includes('[Демо]');
-                    lawsInfo.push(`${lawNames[state.language][law]}: ${state.questionsByLaw[law].length}${isDemo ? ' (демо)' : ''}`);
-                }
-            }
-            
-            successMessage.innerHTML = `<p><i class="fas fa-check-circle"></i> ${getTranslation('loaded')} ${totalQuestions} ${getTranslation('questions')}</p>`;
-            
-            if (lawsInfo.length > 0) {
-                successMessage.innerHTML += `<p><small>${lawsInfo.join(', ')}</small></p>`;
-            }
-            
-            lawSelection.appendChild(successMessage);
-            
-            setTimeout(() => {
-                successMessage.remove();
-            }, 5000);
+            console.log('Вопросы загружены:', totalQuestions);
+            console.log('По законам:', state.questionsByLaw);
             
         } catch (error) {
-            console.error('Ошибка загрузки:', error);
+            console.error('Ошибка загрузки вопросов:', error);
             
-            loadingIndicator.remove();
-            
-            // Если файл не найден, создаем демо-вопросы для ВСЕХ тестов 1-7
+            // Создаем демо-вопросы для всех тестов
             createDemoQuestionsForAllLaws();
             
-            const errorMessage = document.createElement('div');
-            errorMessage.className = 'error-message';
-            errorMessage.innerHTML = `
-                <p><i class="fas fa-exclamation-triangle"></i> ${getTranslation('error_loading')}</p>
-                <p>${error.message}</p>
-                <p>Используются демо-вопросы для всех тестов</p>
-            `;
-            lawSelection.appendChild(errorMessage);
-            
+            alert('Используются демо-вопросы. Для реальных вопросов создайте файл questions_ru.json');
         } finally {
             state.isLoading = false;
         }
     }
     
-    // Создание демо-вопросов для всех законов 1-7
+    // Создание демо-вопросов для всех законов
     function createDemoQuestionsForAllLaws() {
-        console.log('Создание демо-вопросов для всех тестов 1-7');
+        console.log('Создание демо-вопросов для всех тестов');
         
         for (let law = 1; law <= 7; law++) {
             addDemoQuestionsForLaw(law, 5);
@@ -381,7 +164,7 @@ document.addEventListener('DOMContentLoaded', function() {
         for (let i = 1; i <= count; i++) {
             demoQuestions.push({
                 law: lawNumber,
-                question: `[Демо] ${lawNames[state.language][lawNumber]}. Вопрос ${i}: Основные положения?`,
+                question: `[Демо] ${lawNames[lawNumber]}. Вопрос ${i}: Основные положения?`,
                 correctAnswer: `Правильный ответ ${i}`,
                 incorrectAnswers: [
                     `Неправильный вариант ${i}.1`,
@@ -391,12 +174,12 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
         
-        // Добавляем демо-вопросы к уже существующим
+        // Добавляем демо-вопросы
         if (!state.questionsByLaw[lawNumber]) {
             state.questionsByLaw[lawNumber] = [];
         }
         
-        // Добавляем только если еще нет вопросов для этого закона
+        // Добавляем только если еще нет вопросов
         if (state.questionsByLaw[lawNumber].length === 0) {
             state.questionsByLaw[lawNumber].push(...demoQuestions);
             console.log(`Добавлено ${count} демо-вопросов для закона ${lawNumber}`);
@@ -411,7 +194,6 @@ document.addEventListener('DOMContentLoaded', function() {
             questions.forEach(question => {
                 try {
                     if (!question || !question.law || !question.question || !question.correctAnswer || !question.incorrectAnswers) {
-                        console.warn('Пропущен некорректный вопрос:', question);
                         return;
                     }
                     
@@ -425,7 +207,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         });
                     }
                 } catch (error) {
-                    console.error('Ошибка обработки вопроса:', error, question);
+                    console.error('Ошибка обработки вопроса:', error);
                 }
             });
         }
@@ -435,17 +217,20 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Начало теста
     function startTest(lawNumber) {
+        console.log(`Запуск теста для закона ${lawNumber}: ${lawNames[lawNumber]}`);
+        
         const allLawQuestions = state.questionsByLaw[lawNumber] || [];
+        console.log(`Найдено вопросов: ${allLawQuestions.length}`);
         
         if (allLawQuestions.length === 0) {
-            alert(`${getTranslation('no_questions')} ${getTranslation('choose_another_law')}`);
+            alert('Для этого теста нет вопросов. Пожалуйста, выберите другой тест.');
             return;
         }
         
         const questionsToTake = Math.min(QUESTIONS_PER_TEST, allLawQuestions.length);
         
         if (allLawQuestions.length < QUESTIONS_PER_TEST) {
-            alert(`${lawNames[state.language][lawNumber]}: ${getTranslation('available')} ${allLawQuestions.length} ${getTranslation('questions')}. ${getTranslation('test_will_contain')}`);
+            alert(`${lawNames[lawNumber]}: доступно ${allLawQuestions.length} вопросов. Тест будет содержать все доступные вопросы.`);
         }
         
         // Выбираем случайные вопросы
@@ -467,11 +252,11 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Обновляем интерфейс
         if (currentLawElement) {
-            currentLawElement.textContent = lawNames[state.language][lawNumber];
+            currentLawElement.textContent = lawNames[lawNumber];
         }
         
         if (resultsLawName) {
-            resultsLawName.textContent = lawNames[state.language][lawNumber];
+            resultsLawName.textContent = lawNames[lawNumber];
         }
         
         if (totalQuestionsElement) {
@@ -609,12 +394,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="result-question">${index + 1}. ${result.question}</div>
                     <div class="result-answer">
                         <div class="user-answer">
-                            <div class="answer-label">${getTranslation('your_answer')}</div>
+                            <div class="answer-label">Ваш ответ:</div>
                             <div class="answer-text">${result.userAnswer}</div>
                         </div>
                         ${!result.isCorrect ? `
                         <div class="correct-answer">
-                            <div class="answer-label">${getTranslation('correct_answer')}</div>
+                            <div class="answer-label">Правильный ответ:</div>
                             <div class="answer-text">${result.correctAnswer}</div>
                         </div>
                         ` : ''}
@@ -626,47 +411,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         showScreen(screens.results);
-    }
-    
-    // Переключение языка
-    function switchLanguage(lang) {
-        state.language = lang;
-        localStorage.setItem('test_language', lang);
-        
-        updateLanguageButtons();
-        updateInterfaceTexts();
-        loadQuestions();
-        
-        showScreen(screens.selection);
-    }
-    
-    // Обновление кнопок языка
-    function updateLanguageButtons() {
-        if (buttons.langRu && buttons.langKz) {
-            if (state.language === 'ru') {
-                buttons.langRu.classList.add('active');
-                buttons.langKz.classList.remove('active');
-            } else {
-                buttons.langRu.classList.remove('active');
-                buttons.langKz.classList.add('active');
-            }
-        }
-    }
-    
-    // Обновление текстов интерфейса
-    function updateInterfaceTexts() {
-        document.querySelectorAll('[data-lang]').forEach(element => {
-            const key = element.getAttribute('data-lang');
-            const translation = getTranslation(key);
-            if (translation) {
-                element.textContent = translation;
-            }
-        });
-    }
-    
-    // Получение перевода
-    function getTranslation(key) {
-        return translations[state.language][key] || key;
     }
     
     // Перемешивание массива
