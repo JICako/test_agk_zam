@@ -1,4 +1,3 @@
-/* Общие стили */
 * {
     margin: 0;
     padding: 0;
@@ -26,7 +25,6 @@ body {
     position: relative;
 }
 
-/* Переключатель языка */
 .language-switcher {
     position: absolute;
     top: 20px;
@@ -65,23 +63,14 @@ body {
     border-radius: 2px;
 }
 
-/* Остальные стили остаются как в предыдущем ответе */
-/* ... (полностью все стили из предыдущего ответа) ... */
-
 .screen {
     display: none;
-    opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 0.5s, transform 0.5s;
 }
 
 .screen.active {
     display: block;
-    opacity: 1;
-    transform: translateY(0);
 }
 
-/* Заголовок */
 .header {
     text-align: center;
     margin-bottom: 40px;
@@ -103,7 +92,6 @@ body {
     font-size: 1.1rem;
 }
 
-/* Выбор закона */
 .law-selection {
     margin-bottom: 40px;
 }
@@ -135,7 +123,7 @@ body {
 }
 
 .law-card:hover {
-    transform: translateY(-10px);
+    transform: translateY(-5px);
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
     border-color: #3498db;
     background: #e8f4fc;
@@ -166,7 +154,6 @@ body {
     font-size: 0.9rem;
 }
 
-/* Инструкция */
 .instructions {
     background: #f8f9fa;
     border-radius: 15px;
@@ -200,7 +187,6 @@ body {
     margin-right: 10px;
 }
 
-/* Экран тестирования */
 .test-header {
     display: flex;
     justify-content: space-between;
@@ -227,7 +213,7 @@ body {
     height: 100%;
     background: #3498db;
     width: 0%;
-    transition: width 0.5s ease;
+    transition: width 0.3s ease;
     border-radius: 5px;
 }
 
@@ -276,7 +262,7 @@ body {
     font-size: 1rem;
     color: #2c3e50;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
     display: flex;
     align-items: center;
 }
@@ -284,11 +270,12 @@ body {
 .option-btn:hover:not(:disabled) {
     background: #f0f7ff;
     border-color: #3498db;
-    transform: translateX(5px);
+    transform: translateX(3px);
 }
 
 .option-btn:disabled {
     cursor: not-allowed;
+    opacity: 0.8;
 }
 
 .option-btn.correct {
@@ -332,7 +319,6 @@ body {
     justify-content: flex-end;
 }
 
-/* Кнопки */
 .btn-primary, .btn-secondary {
     padding: 15px 30px;
     border: none;
@@ -354,7 +340,7 @@ body {
 
 .btn-primary:hover:not(:disabled) {
     background: #2980b9;
-    transform: translateY(-3px);
+    transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
 }
 
@@ -370,11 +356,10 @@ body {
 
 .btn-secondary:hover {
     background: #d5dbdb;
-    transform: translateY(-3px);
+    transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
-/* Экран результатов */
 .results-header {
     text-align: center;
     margin-bottom: 30px;
@@ -416,7 +401,6 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background 1s ease;
 }
 
 .score-circle::before {
@@ -569,7 +553,6 @@ body {
     flex-wrap: wrap;
 }
 
-/* Футер */
 .footer {
     text-align: center;
     margin-top: 40px;
@@ -579,7 +562,6 @@ body {
     font-size: 0.9rem;
 }
 
-/* Адаптивность */
 @media (max-width: 768px) {
     .container {
         padding: 20px;
@@ -587,8 +569,6 @@ body {
     
     .header h1 {
         font-size: 2rem;
-        flex-direction: column;
-        gap: 10px;
     }
     
     .law-cards {
@@ -606,7 +586,6 @@ body {
     
     .btn-primary, .btn-secondary {
         width: 100%;
-        justify-content: center;
     }
     
     .results-actions {
@@ -615,7 +594,6 @@ body {
     
     .score-container {
         flex-direction: column;
-        text-align: center;
     }
     
     .result-answer {
@@ -647,4 +625,29 @@ body {
     .question-container h2 {
         font-size: 1.3rem;
     }
+}
+
+.loading-indicator {
+    text-align: center;
+    padding: 20px;
+    color: #3498db;
+}
+
+.success-message {
+    text-align: center;
+    padding: 10px;
+    background: #d4edda;
+    color: #155724;
+    border-radius: 10px;
+    margin: 10px 0;
+}
+
+.error-message {
+    text-align: center;
+    padding: 15px;
+    background: #f8d7da;
+    color: #721c24;
+    border-radius: 10px;
+    margin: 10px 0;
+    font-size: 0.9rem;
 }

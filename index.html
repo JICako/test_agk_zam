@@ -11,13 +11,13 @@
     <div class="container">
         <!-- Переключатель языка -->
         <div class="language-switcher">
-            <button id="lang-kz" class="lang-btn active">
-                <img src="https://flagcdn.com/w20/kz.png" alt="Қазақша">
-                Қазақша
-            </button>
-            <button id="lang-ru" class="lang-btn">
+            <button id="lang-ru" class="lang-btn active">
                 <img src="https://flagcdn.com/w20/ru.png" alt="Русский">
                 Русский
+            </button>
+            <button id="lang-kz" class="lang-btn">
+                <img src="https://flagcdn.com/w20/kz.png" alt="Қазақша">
+                Қазақша
             </button>
         </div>
 
@@ -63,7 +63,7 @@
                 <h3><i class="fas fa-info-circle"></i> <span data-lang="instructions">Инструкция</span></h3>
                 <ul>
                     <li data-lang="instruction1">Выберите один из пяти законов для тестирования</li>
-                    <li data-lang="instruction2">Каждый тест содержит 50 случайных вопросов</li>
+                    <li data-lang="instruction2">Каждый тест содержит случайные вопросы без повторений</li>
                     <li data-lang="instruction3">В каждом вопросе нужно выбрать один правильный ответ</li>
                     <li data-lang="instruction4">После ответа вы увидите правильный вариант</li>
                     <li data-lang="instruction5">В конце теста вы получите детальный результат</li>
@@ -82,7 +82,7 @@
                         <span data-lang="question">Вопрос</span> 
                         <span id="current-question">1</span> 
                         <span data-lang="of">из</span> 
-                        <span id="total-questions">50</span>
+                        <span id="total-questions">10</span>
                     </div>
                 </div>
                 
@@ -161,7 +161,7 @@
         </div>
         
         <div class="footer">
-            <p data-lang="copyright">© 2023 Тестирование по законам. Все права защищены.</p>
+            <p data-lang="copyright">© 2023 Тестирование по законам</p>
         </div>
     </div>
     
