@@ -11,6 +11,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const nextQuestionBtn = document.getElementById('next-question-btn');
     const restartTestBtn = document.getElementById('restart-test-btn');
     const newTestBtn = document.getElementById('new-test-btn');
+    const langKzBtn = document.getElementById('lang-kz');
+    const langRuBtn = document.getElementById('lang-ru');
     
     // Элементы тестирования
     const questionText = document.getElementById('question-text');
@@ -36,11 +38,111 @@ document.addEventListener('DOMContentLoaded', function() {
     let selectedLaw = 1;
     let allQuestionsByLaw = {};
     let isLoading = false;
+    let currentLanguage = 'ru'; // 'ru' или 'kz'
+    
+    // Словари переводов
+    const translations = {
+        'ru': {
+            'title': 'Тестирование по законам',
+            'subtitle': 'Проверьте свои знания основных законов',
+            'choose_law': 'Выберите закон для тестирования',
+            'law1_title': 'Первый закон',
+            'law1_desc': 'Основные положения и принципы',
+            'law2_title': 'Второй закон',
+            'law2_desc': 'Права и обязанности',
+            'law3_title': 'Третий закон',
+            'law3_desc': 'Процессуальные нормы',
+            'law4_title': 'Четвертый закон',
+            'law4_desc': 'Административные положения',
+            'law5_title': 'Пятый закон',
+            'law5_desc': 'Заключительные положения',
+            'instructions': 'Инструкция',
+            'instruction1': 'Выберите один из пяти законов для тестирования',
+            'instruction2': 'Каждый тест содержит 50 случайных вопросов',
+            'instruction3': 'В каждом вопросе нужно выбрать один правильный ответ',
+            'instruction4': 'После ответа вы увидите правильный вариант',
+            'instruction5': 'В конце теста вы получите детальный результат',
+            'question': 'Вопрос',
+            'of': 'из',
+            'law': 'Закон',
+            'back': 'Назад',
+            'next_question': 'Следующий вопрос',
+            'results': 'Результаты тестирования',
+            'correct_answers': 'правильных ответов',
+            'correct_count': 'Правильных ответов',
+            'incorrect_count': 'Неправильных ответов',
+            'total_questions': 'Всего вопросов',
+            'results_details': 'Детализация ответов',
+            'restart_test': 'Пройти тест заново',
+            'choose_another': 'Выбрать другой закон',
+            'copyright': '© 2023 Тестирование по законам. Все права защищены.',
+            'your_answer': 'Ваш ответ:',
+            'correct_answer': 'Правильный ответ:',
+            'loading': 'Загрузка вопросов...',
+            'loaded': 'Загружено',
+            'questions': 'вопросов',
+            'error_loading': 'Ошибка загрузки вопросов',
+            'no_questions': 'Для этого закона нет вопросов',
+            'choose_another_law': 'Пожалуйста, выберите другой закон.'
+        },
+        'kz': {
+            'title': 'Заңдар бойынша тестілеу',
+            'subtitle': 'Негізгі заңдар бойынша біліміңізді тексеріңіз',
+            'choose_law': 'Тестілеу үшін заңды таңдаңыз',
+            'law1_title': 'Бірінші заң',
+            'law1_desc': 'Негізгі ережелер мен қағидаттар',
+            'law2_title': 'Екінші заң',
+            'law2_desc': 'Құқықтар мен міндеттер',
+            'law3_title': 'Үшінші заң',
+            'law3_desc': 'Процессуалдық ережелер',
+            'law4_title': 'Төртінші заң',
+            'law4_desc': 'Әкімшілік ережелер',
+            'law5_title': 'Бесінші заң',
+            'law5_desc': 'Қорытынды ережелер',
+            'instructions': 'Нұсқаулық',
+            'instruction1': 'Тестілеу үшін бес заңның бірін таңдаңыз',
+            'instruction2': 'Әрбір тестте 50 кездейсоқ сұрақ бар',
+            'instruction3': 'Әрбір сұрақта бір дұрыс жауапты таңдау керек',
+            'instruction4': 'Жауап бергеннен кейін дұрыс нұсқаны көресіз',
+            'instruction5': 'Тест аяқталғаннан кейін толық нәтиже аласыз',
+            'question': 'Сұрақ',
+            'of': '-дан',
+            'law': 'Заң',
+            'back': 'Артқа',
+            'next_question': 'Келесі сұрақ',
+            'results': 'Тестілеу нәтижелері',
+            'correct_answers': 'дұрыс жауап',
+            'correct_count': 'Дұрыс жауаптар',
+            'incorrect_count': 'Қате жауаптар',
+            'total_questions': 'Барлық сұрақтар',
+            'results_details': 'Жауаптардың егжей-тегжейі',
+            'restart_test': 'Тестті қайта өту',
+            'choose_another': 'Басқа заңды таңдау',
+            'copyright': '© 2023 Заңдар бойынша тестілеу. Барлық құқықтар қорғалған.',
+            'your_answer': 'Сіздің жауабыңыз:',
+            'correct_answer': 'Дұрыс жауап:',
+            'loading': 'Сұрақтар жүктелуде...',
+            'loaded': 'Жүктелді',
+            'questions': 'сұрақ',
+            'error_loading': 'Сұрақтарды жүктеу кезінде қате пайда болды',
+            'no_questions': 'Бұл заң үшін сұрақтар жоқ',
+            'choose_another_law': 'Басқа заңды таңдаңыз.'
+        }
+    };
     
     // Инициализация
     initializeApp();
     
     function initializeApp() {
+        // Загружаем сохраненный язык из localStorage
+        const savedLanguage = localStorage.getItem('test_language');
+        if (savedLanguage) {
+            currentLanguage = savedLanguage;
+        }
+        
+        // Устанавливаем активную кнопку языка
+        updateLanguageButtons();
+        
         // Загружаем вопросы при инициализации
         loadQuestions();
         
@@ -48,12 +150,12 @@ document.addEventListener('DOMContentLoaded', function() {
         lawCards.forEach(card => {
             card.addEventListener('click', () => {
                 if (isLoading) {
-                    alert('Вопросы еще загружаются. Пожалуйста, подождите...');
+                    alert(getTranslation('loading'));
                     return;
                 }
                 
                 if (Object.keys(allQuestionsByLaw).length === 0) {
-                    alert('Вопросы не загружены. Проверьте наличие файла questions.json и подключение к интернету.');
+                    alert(getTranslation('error_loading'));
                     return;
                 }
                 
@@ -76,6 +178,19 @@ document.addEventListener('DOMContentLoaded', function() {
             showScreen(testSelectionScreen);
         });
         
+        // Обработчики переключения языка
+        langKzBtn.addEventListener('click', () => {
+            if (currentLanguage !== 'kz') {
+                switchLanguage('kz');
+            }
+        });
+        
+        langRuBtn.addEventListener('click', () => {
+            if (currentLanguage !== 'ru') {
+                switchLanguage('ru');
+            }
+        });
+        
         // Показываем экран выбора теста
         showScreen(testSelectionScreen);
     }
@@ -86,19 +201,20 @@ document.addEventListener('DOMContentLoaded', function() {
         // Показываем индикатор загрузки
         const loadingIndicator = document.createElement('div');
         loadingIndicator.className = 'loading-indicator';
-        loadingIndicator.innerHTML = '<p><i class="fas fa-spinner fa-spin"></i> Загрузка вопросов...</p>';
+        loadingIndicator.innerHTML = `<p><i class="fas fa-spinner fa-spin"></i> ${getTranslation('loading')}</p>`;
         document.querySelector('.law-selection').appendChild(loadingIndicator);
         
         try {
-            // Загружаем вопросы из JSON файла
-            const response = await fetch('questions.json');
+            // Загружаем вопросы из JSON файла в зависимости от языка
+            const filename = `questions_${currentLanguage}.json`;
+            const response = await fetch(filename);
             
             if (!response.ok) {
-                throw new Error(`HTTP ошибка! Статус: ${response.status}`);
+                throw new Error(`HTTP қате! Статус: ${response.status}`);
             }
             
             const allQuestionsData = await response.json();
-            console.log('Вопросы успешно загружены:', allQuestionsData.length);
+            console.log('Сұрақтар сәтті жүктелді:', allQuestionsData.length);
             
             // Группируем вопросы по законам
             allQuestionsByLaw = groupQuestionsByLaw(allQuestionsData);
@@ -116,7 +232,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 totalQuestions += allQuestionsByLaw[law].length;
             }
             
-            successMessage.innerHTML = `<p><i class="fas fa-check-circle"></i> Загружено ${totalQuestions} вопросов</p>`;
+            successMessage.innerHTML = `<p><i class="fas fa-check-circle"></i> ${getTranslation('loaded')} ${totalQuestions} ${getTranslation('questions')}</p>`;
             document.querySelector('.law-selection').appendChild(successMessage);
             
             // Через 3 секунды убираем сообщение
@@ -125,7 +241,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 3000);
             
         } catch (error) {
-            console.error('Ошибка загрузки вопросов:', error);
+            console.error('Сұрақтарды жүктеу кезінде қате:', error);
             
             // Убираем индикатор загрузки
             loadingIndicator.remove();
@@ -134,10 +250,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const errorMessage = document.createElement('div');
             errorMessage.className = 'error-message';
             errorMessage.innerHTML = `
-                <p><i class="fas fa-exclamation-triangle"></i> Ошибка загрузки вопросов</p>
+                <p><i class="fas fa-exclamation-triangle"></i> ${getTranslation('error_loading')}</p>
                 <p>${error.message}</p>
-                <p>Убедитесь, что файл questions.json находится в той же директории, что и index.html</p>
-                <p>Или запустите сайт на локальном сервере (например, через Live Server в VS Code)</p>
+                <p>Файл questions_${currentLanguage}.json-дың дұрыс орналасқанына көз жеткізіңіз</p>
+                <p>Немесе сайтты жергілікті серверде іске қосыңыз</p>
             `;
             document.querySelector('.law-selection').appendChild(errorMessage);
             
@@ -151,6 +267,54 @@ document.addEventListener('DOMContentLoaded', function() {
         } finally {
             isLoading = false;
         }
+    }
+    
+    function switchLanguage(lang) {
+        currentLanguage = lang;
+        localStorage.setItem('test_language', lang);
+        
+        // Обновляем кнопки языка
+        updateLanguageButtons();
+        
+        // Обновляем тексты интерфейса
+        updateInterfaceTexts();
+        
+        // Перезагружаем вопросы на новом языке
+        loadQuestions();
+        
+        // Если тест был начат, возвращаем на экран выбора
+        showScreen(testSelectionScreen);
+    }
+    
+    function updateLanguageButtons() {
+        if (currentLanguage === 'kz') {
+            langKzBtn.classList.add('active');
+            langRuBtn.classList.remove('active');
+        } else {
+            langKzBtn.classList.remove('active');
+            langRuBtn.classList.add('active');
+        }
+    }
+    
+    function updateInterfaceTexts() {
+        // Обновляем все элементы с data-lang атрибутом
+        document.querySelectorAll('[data-lang]').forEach(element => {
+            const key = element.getAttribute('data-lang');
+            element.textContent = getTranslation(key);
+        });
+        
+        // Обновляем заголовок закона в тесте
+        if (currentLawElement) {
+            currentLawElement.innerHTML = `${getTranslation('law')} ${selectedLaw}`;
+        }
+        
+        if (resultsLawName) {
+            resultsLawName.innerHTML = `${getTranslation('law')} ${selectedLaw}`;
+        }
+    }
+    
+    function getTranslation(key) {
+        return translations[currentLanguage][key] || key;
     }
     
     function groupQuestionsByLaw(questions) {
@@ -172,13 +336,13 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Проверяем, есть ли вопросы для выбранного закона
         if (allLawQuestions.length === 0) {
-            alert(`Для закона ${lawNumber} нет вопросов. Пожалуйста, выберите другой закон.`);
+            alert(`${getTranslation('no_questions')} ${getTranslation('choose_another_law')}`);
             return;
         }
         
         // Проверяем, достаточно ли вопросов
         if (allLawQuestions.length < QUESTIONS_PER_TEST) {
-            alert(`Для закона ${lawNumber} доступно только ${allLawQuestions.length} вопросов. Тест будет содержать все доступные вопросы.`);
+            alert(`${getTranslation('law')} ${lawNumber} ${getTranslation('available')} ${allLawQuestions.length} ${getTranslation('questions')}. ${getTranslation('test_will_contain')}`);
         }
         
         // Выбираем случайные вопросы без повторений
@@ -199,8 +363,8 @@ document.addEventListener('DOMContentLoaded', function() {
         testResults = [];
         
         // Обновляем интерфейс
-        currentLawElement.textContent = `Закон ${lawNumber}`;
-        resultsLawName.textContent = `Закон ${lawNumber}`;
+        currentLawElement.innerHTML = `${getTranslation('law')} ${lawNumber}`;
+        resultsLawName.innerHTML = `${getTranslation('law')} ${lawNumber}`;
         totalQuestionsElement.textContent = currentQuestions.length;
         
         // Показываем экран тестирования
@@ -340,12 +504,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="result-question">${index + 1}. ${result.question}</div>
                 <div class="result-answer">
                     <div class="user-answer">
-                        <div class="answer-label">Ваш ответ:</div>
+                        <div class="answer-label">${getTranslation('your_answer')}</div>
                         <div class="answer-text">${result.userAnswer}</div>
                     </div>
                     ${!result.isCorrect ? `
                     <div class="correct-answer">
-                        <div class="answer-label">Правильный ответ:</div>
+                        <div class="answer-label">${getTranslation('correct_answer')}</div>
                         <div class="answer-text">${result.correctAnswer}</div>
                     </div>
                     ` : ''}
