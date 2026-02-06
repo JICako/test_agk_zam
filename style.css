@@ -668,3 +668,58 @@ body {
     margin: 10px 0;
     font-size: 0.9rem;
 }
+
+.lang-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 15px;
+    border: 2px solid #3498db;
+    background: white;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    min-width: 110px;
+    justify-content: center;
+}
+
+.lang-btn.active {
+    background: #3498db;
+    color: white;
+    box-shadow: 0 3px 10px rgba(52, 152, 219, 0.3);
+}
+
+.lang-btn:hover:not(.active) {
+    background: #f0f7ff;
+    transform: translateY(-2px);
+}
+
+.lang-btn img {
+    width: 20px;
+    height: 15px;
+    object-fit: cover;
+    border-radius: 2px;
+    border: 1px solid rgba(0,0,0,0.1);
+}
+
+.lang-text {
+    font-size: 0.9rem;
+}
+
+/* Для мобильных устройств скрываем текст на кнопках языка */
+@media (max-width: 480px) {
+    .lang-text {
+        display: none;
+    }
+    
+    .lang-btn {
+        min-width: 45px;
+        padding: 8px 10px;
+        justify-content: center;
+    }
+    
+    .lang-btn img {
+        margin: 0;
+    }
+}
