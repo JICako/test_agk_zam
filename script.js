@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Конфигурация
-    const QUESTIONS_PER_TEST = 10;
+    const QUESTIONS_PER_TEST = 30;
     
     // Текущий язык (по умолчанию русский)
     let currentLanguage = 'ru';
